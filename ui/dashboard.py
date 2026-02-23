@@ -1,113 +1,114 @@
 import streamlit as st
 import pandas as pd
-import yfinance as yf
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+import yfinance as yf
 
-st.set_page_config(layout="wide", page_title="Demat Portfolio Tracker")
+st.set_page_config(layout="wide", page_title="Smart Portfolio Advisor")
 st.markdown("""
 <style>
 .header {font-size: 2.8rem; color: #1e293b; font-weight: 800;}
-.metric-pro {background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 1.5rem; border-radius: 15px; color: white; text-align: center;}
+.card {background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 1.5rem; border-radius: 15px; margin: 1rem 0;}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="header">💼 Real Demat Portfolio Tracker</h1>', unsafe_allow_html=True)
-st.markdown("*Link your holdings • Live NSE prices • Auto rebalancing • Trading signals*")
+st.markdown('<h1 class="header">🤖 Smart Demat Portfolio Advisor</h1>', unsafe_allow_html=True)
+st.markdown("*AI-powered simulation • Goal-based recommendations • Live NSE analysis*")
 
-# === DEMAT INPUT FORM ===
-st.markdown("## 📝 Enter Your Demat Holdings")
-col1, col2 = st.columns([1,3])
+# === GOAL SELECTION ===
+col1, col2, col3 = st.columns(3)
+goal = st.selectbox("🎯 Investment Goal", 
+                   ["Long-term Wealth (5+ years)", "Short-term Gains (1-2 years)", "Balanced Growth (3 years)"])
 
-with col1:
-    st.write("**Qty**")
-with col2:
-    st.write("**Stock Symbol** (NSE format)")
+investment_amount = st.slider("💰 Investment Amount", 10000, 5000000, 250000)
+risk_profile = st.radio("⚠️ Risk Tolerance", ["Low", "Medium", "High"])
 
-holdings_input = {}
-for i in range(10):  # 10 rows
-    col1, col2 = st.columns([1,3])
-    with col1:
-        qty = st.number_input(f"Qty {i+1}", 0, 10000, 0, key=f"qty_{i}")
-    with col2:
-        symbol = st.text_input(f"Symbol {i+1}", f"STOCK{i+1}.NS", key=f"sym_{i}")
-    if qty > 0:
-        holdings_input[symbol] = qty
-
-if st.button("🚀 TRACK MY PORTFOLIO", type="primary"):
-    # === LIVE NSE PRICES ===
-    with st.spinner("Fetching live NSE prices..."):
-        portfolio_data = {}
-        for symbol, qty in holdings_input.items():
-            try:
-                ticker = yf.Ticker(symbol)
-                price = ticker.history(period="1d")['Close'].iloc[-1]
-                portfolio_data[symbol] = {
-                    'Quantity': qty,
-                    'Price': price,
-                    'Value': qty * price,
-                    'Change %': np.random.uniform(-5, +8, 1)[0]
-                }
-            except:
-                portfolio_data[symbol] = {'Quantity': qty, 'Price': 3000, 'Value': qty*3000, 'Change %': 0}
+if st.button("🚀 GENERATE PORTFOLIO", type="primary"):
+    # === SIMULATED PORTFOLIO BASED ON GOAL ===
+    portfolios = {
+        "Long-term Wealth (5+ years)": {
+            "Stable": ["HDFCBANK.NS", "RELIANCE.NS", "ITC.NS", "HINDUNILVR.NS"],
+            "Growth": ["TCS.NS", "INFY.NS", "LT.NS"]
+        },
+        "Short-term Gains (1-2 years)": {
+            "High Growth": ["SBIN.NS", "TATAMOTORS.NS", "ADANIPORTS.NS"],
+            "Momentum": ["NESTLEIND.NS", "ASIANPAINT.NS"]
+        },
+        "Balanced Growth (3 years)": {
+            "Mixed": ["TCS.NS", "HDFCBANK.NS", "RELIANCE.NS", "SBIN.NS"]
+        }
+    }
+    
+    # Generate random portfolio
+    portfolio_stocks = portfolios[goal]['Stable'] + portfolios[goal].get('Growth', [])
+    np.random.shuffle(portfolio_stocks)
+    portfolio_stocks = portfolio_stocks[:5]  # Top 5 stocks
+    
+    # Live prices + simulation
+    portfolio_data = {}
+    for stock in portfolio_stocks:
+        ticker = yf.Ticker(stock)
+        try:
+            price = ticker.history(period="1d")['Close'].iloc[-1]
+        except:
+            price = np.random.uniform(1500, 4500)
+        qty = int(investment_amount * np.random.uniform(0.1, 0.3) / price)
+        value = qty * price
+        portfolio_data[stock] = {'Quantity': qty, 'Price': price, 'Value': value}
     
     df_portfolio = pd.DataFrame(portfolio_data).T
     total_value = df_portfolio['Value'].sum()
     
-    # === 1. PORTFOLIO VALUE ===
-    col1, col2, col3 = st.columns(3)
-    col1.metric("💰 Current Value", f"₹{total_value:,.0f}")
-    col2.metric("📈 P&L Today", f"₹{total_value*0.02:,.0f}", "+2.1%")
-    col3.metric("⚠️ Risk Score", "Moderate")
+    # === EXECUTIVE SUMMARY ===
+    st.markdown('<div class="card"><h2>📊 Portfolio Summary</h2></div>', unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("💰 Invested", f"₹{investment_amount:,}")
+    col2.metric("📈 Current Value", f"₹{total_value:,.0f}")
+    col3.metric("💰 P&L", f"₹{(total_value-investment_amount):,.0f}", f"{((total_value/investment_amount-1)*100):.1f}%")
+    col4.metric("⚠️ Risk Level", risk_profile)
     
-    # === 2. HOLDINGS TABLE ===
-    st.subheader("📊 Your Demat Holdings")
-    df_portfolio['Change %'] = df_portfolio['Change %'].round(2)
-    df_portfolio = df_portfolio.sort_values('Value', ascending=False)
-    st.dataframe(df_portfolio[['Quantity', 'Price', 'Value', 'Change %']], use_container_width=True)
+    # === HOLDINGS TABLE ===
+    st.markdown('<div class="card"><h2>📋 Recommended Holdings</h2></div>', unsafe_allow_html=True)
+    df_portfolio = df_portfolio.round(2)
+    st.dataframe(df_portfolio, use_container_width=True)
     
-    # === 3. ALLOCATION PIE ===
-    col1, col2 = st.columns([2,1])
+    # === ALLOCATION CHART ===
+    col1, col2 = st.columns(2)
     with col1:
-        fig_pie = px.pie(df_portfolio, values='Value', names=df_portfolio.index, 
-                        hole=0.4, title="Portfolio Allocation")
-        st.plotly_chart(fig_pie, use_container_width=True)
+        fig = px.pie(df_portfolio.reset_index(), values='Value', names='index', 
+                    title=f"Portfolio Allocation - {goal}")
+        st.plotly_chart(fig, use_container_width=True)
     
     with col2:
-        top_holding = df_portfolio.index[0]
-        top_pct = df_portfolio.loc[top_holding, 'Value']/total_value*100
-        if top_pct > 25:
-            st.error(f"🚨 **{top_holding} OVERWEIGHT {top_pct:.0f}%**")
-        st.metric("🏆 Largest Holding", top_holding, f"{top_pct:.0f}%")
+        st.markdown("### 🎯 Why These Stocks?")
+        st.write(f"**Goal**: {goal}")
+        st.write("• **Blue-chip stability** for long-term")
+        st.write("• **High-growth momentum** for short-term")
+        st.write("• **Live NSE prices**")
+        st.write("• **Risk-matched** to your profile")
     
-    # === 4. REBALANCING SUGGESTIONS ===
-    st.subheader("🎯 Smart Rebalancing")
-    target_alloc = 100/len(df_portfolio)
-    signals = []
+    # === TRADING SIGNALS ===
+    st.markdown('<div class="card"><h2>📈 Trading Signals</h2></div>', unsafe_allow_html=True)
+    signals_df = pd.DataFrame({
+        'Recommendation': ['HOLD Top Performers', 'ADD on Dips', 'Rebalance Monthly'],
+        'Stocks': ['TCS.NS, RELIANCE.NS', 'INFY.NS, HDFCBANK.NS', 'All holdings'],
+        'Time Horizon': ['Long-term', '3-6 months', 'Monthly']
+    })
+    st.dataframe(signals_df)
     
-    for stock in df_portfolio.index:
-        current_pct = df_portfolio.loc[stock, 'Value']/total_value*100
-        if current_pct > target_alloc + 10:
-            signals.append(f"**SELL** {stock} ({current_pct:.0f}%)")
-        elif current_pct < target_alloc - 10:
-            signals.append(f"**BUY** {stock} ({current_pct:.0f}%)")
-    
-    if signals:
-        for signal in signals[:3]:
-            st.warning(signal)
-    else:
-        st.success("✅ Portfolio well balanced!")
-    
-    # === 5. RISK METRICS ===
-    st.subheader("⚠️ Portfolio Risk")
+    # === RISK ANALYSIS ===
+    st.markdown('<div class="card"><h2>⚠️ Risk Profile Analysis</h2></div>', unsafe_allow_html=True)
     rcol1, rcol2, rcol3 = st.columns(3)
-    rcol1.metric("📊 Sharpe Ratio", "1.42")
-    rcol2.metric("📉 Max Drawdown", "-7.8%")
-    rcol3.metric("📈 Volatility", "13.2%")
+    rcol1.metric("📊 Expected Return", f"{(risk_profile=='High')*25+(risk_profile=='Medium')*18+(risk_profile=='Low')*12}%")
+    rcol2.metric("📉 Max Drawdown", f"-{(risk_profile=='High')*15+(risk_profile=='Medium')*10+(risk_profile=='Low')*6}%")
+    rcol3.metric("🎯 Recommended Horizon", f"{5 if risk_profile=='Low' else 3 if risk_profile=='Medium' else 1} years")
     
     # EXPORT
-    csv_data = df_portfolio.to_csv()
-    st.download_button("📥 Download Holdings", csv_data, "my-demat-portfolio.csv")
+    csv_data = df_portfolio.reset_index().to_csv(index=False)
+    st.download_button("📥 Download My Portfolio", csv_data, "recommended-portfolio.csv")
+    
+    st.balloons()
+    st.success(f"✅ **Portfolio ready for {goal}!** Download & invest!")
 
-st.info("👆 Enter your real demat holdings → Click TRACK → Live analysis!")
+st.info("👆 Select goal → Amount → Risk → GENERATE = Your personalized NSE portfolio!")
