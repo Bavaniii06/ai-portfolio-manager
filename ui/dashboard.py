@@ -2,113 +2,101 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-import yfinance as yf
+from io import StringIO
 
-st.set_page_config(layout="wide", page_title="Smart Portfolio Advisor")
-st.markdown("""
-<style>
-.header {font-size: 2.8rem; color: #1e293b; font-weight: 800;}
-.card {background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 1.5rem; border-radius: 15px; margin: 1rem 0;}
-</style>
-""", unsafe_allow_html=True)
+st.set_page_config(layout="wide", page_title="Portfolio Rebalancer")
+st.markdown('<h1 style="color:#1e293b;">🎯 AI Portfolio Rebalancer</h1>', unsafe_allow_html=True)
+st.markdown("*Upload demat → Auto rebalance → Goal-based future buys*")
 
-st.markdown('<h1 class="header">🤖 Smart Demat Portfolio Advisor</h1>', unsafe_allow_html=True)
-st.markdown("*AI-powered simulation • Goal-based recommendations • Live NSE analysis*")
+# === UPLOAD YOUR DEMAT ===
+uploaded_file = st.file_uploader("📁 Upload CSV/Excel (Stock,Quantity)", type=['csv','xlsx'])
+goal = st.selectbox("🎯 Rebalance Goal", 
+                   ["Long-term (5+ yrs, 60/40 Equity/Debt)", 
+                    "Growth (3 yrs, 75/25 Equity/Debt)", 
+                    "Aggressive (1-2 yrs, 90/10 Equity/Debt)"])
 
-# === GOAL SELECTION ===
-col1, col2, col3 = st.columns(3)
-goal = st.selectbox("🎯 Investment Goal", 
-                   ["Long-term Wealth (5+ years)", "Short-term Gains (1-2 years)", "Balanced Growth (3 years)"])
-
-investment_amount = st.slider("💰 Investment Amount", 10000, 5000000, 250000)
-risk_profile = st.radio("⚠️ Risk Tolerance", ["Low", "Medium", "High"])
-
-if st.button("🚀 GENERATE PORTFOLIO", type="primary"):
-    # === SIMULATED PORTFOLIO BASED ON GOAL ===
-    portfolios = {
-        "Long-term Wealth (5+ years)": {
-            "Stable": ["HDFCBANK.NS", "RELIANCE.NS", "ITC.NS", "HINDUNILVR.NS"],
-            "Growth": ["TCS.NS", "INFY.NS", "LT.NS"]
-        },
-        "Short-term Gains (1-2 years)": {
-            "High Growth": ["SBIN.NS", "TATAMOTORS.NS", "ADANIPORTS.NS"],
-            "Momentum": ["NESTLEIND.NS", "ASIANPAINT.NS"]
-        },
-        "Balanced Growth (3 years)": {
-            "Mixed": ["TCS.NS", "HDFCBANK.NS", "RELIANCE.NS", "SBIN.NS"]
-        }
+if uploaded_file is not None and st.button("🚀 REBALANCE PORTFOLIO", type="primary"):
+    # === PARSE UPLOAD ===
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_excel(uploaded_file)
+    
+    # Assume columns: Stock, Quantity (add Price simulation)
+    df['Price'] = np.random.uniform(500, 5000, len(df))
+    df['Current Value'] = df['Quantity'] * df['Price']
+    total_value = df['Current Value'].sum()
+    
+    # === TARGET ALLOCATIONS BY GOAL ===
+    targets = {
+        "Long-term (5+ yrs, 60/40 Equity/Debt)": {'Equity': 0.60, 'Debt': 0.40},
+        "Growth (3 yrs, 75/25 Equity/Debt)": {'Equity': 0.75, 'Debt': 0.25},
+        "Aggressive (1-2 yrs, 90/10 Equity/Debt)": {'Equity': 0.90, 'Debt': 0.10}
     }
     
-    # Generate random portfolio
-    portfolio_stocks = portfolios[goal]['Stable'] + portfolios[goal].get('Growth', [])
-    np.random.shuffle(portfolio_stocks)
-    portfolio_stocks = portfolio_stocks[:5]  # Top 5 stocks
+    target_alloc = targets[goal]
+    equity_target = total_value * target_alloc['Equity']
+    debt_target = total_value * target_alloc['Debt']
     
-    # Live prices + simulation
-    portfolio_data = {}
-    for stock in portfolio_stocks:
-        ticker = yf.Ticker(stock)
-        try:
-            price = ticker.history(period="1d")['Close'].iloc[-1]
-        except:
-            price = np.random.uniform(1500, 4500)
-        qty = int(investment_amount * np.random.uniform(0.1, 0.3) / price)
-        value = qty * price
-        portfolio_data[stock] = {'Quantity': qty, 'Price': price, 'Value': value}
+    # === CURRENT vs TARGET ===
+    current_equity = df['Current Value'].sum() * 0.85  # Assume 85% equity now
+    rebalance_needs = {
+        'Equity Over/Under': f"{'+' if current_equity > equity_target else '-'}{(abs(current_equity-equity_target)/1000):,.0f}K",
+        'Debt Over/Under': f"{'+' if current_equity < equity_target else '-'}{(abs(debt_target-(total_value-current_equity))/1000):,.0f}K"
+    }
     
-    df_portfolio = pd.DataFrame(portfolio_data).T
-    total_value = df_portfolio['Value'].sum()
+    # === DASHBOARD ===
+    col1, col2, col3 = st.columns(3)
+    col1.metric("💰 Current Value", f"₹{total_value:,.0f}")
+    col2.metric("🎯 Target Equity", f"₹{equity_target:,.0f}")
+    col3.metric("⚖️ Rebalance Needed", f"₹{(abs(current_equity-equity_target)/1000):,.0f}K")
     
-    # === EXECUTIVE SUMMARY ===
-    st.markdown('<div class="card"><h2>📊 Portfolio Summary</h2></div>', unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("💰 Invested", f"₹{investment_amount:,}")
-    col2.metric("📈 Current Value", f"₹{total_value:,.0f}")
-    col3.metric("💰 P&L", f"₹{(total_value-investment_amount):,.0f}", f"{((total_value/investment_amount-1)*100):.1f}%")
-    col4.metric("⚠️ Risk Level", risk_profile)
+    # === HOLDINGS ANALYSIS ===
+    st.subheader("📊 Current Holdings")
+    df_display = df[['Stock', 'Quantity', 'Price', 'Current Value']].round(0)
+    st.dataframe(df_display, use_container_width=True)
     
-    # === HOLDINGS TABLE ===
-    st.markdown('<div class="card"><h2>📋 Recommended Holdings</h2></div>', unsafe_allow_html=True)
-    df_portfolio = df_portfolio.round(2)
-    st.dataframe(df_portfolio, use_container_width=True)
+    # === REBALANCING PLAN ===
+    st.subheader("🎯 Rebalancing Plan")
+    plan_df = pd.DataFrame({
+        'Action': ['Reduce Equity Exposure', 'Increase Debt Allocation', 'Top 3 Buys', 'Avoid'],
+        'Recommendation': [
+            f"Sell ₹{(current_equity-equity_target)/1000:,.0f}K equity",
+            f"Buy ₹{(debt_target-(total_value-current_equity))/1000:,.0f}K debt",
+            "HDFCBANK.NS, LT.NS, NESTLEIND.NS",
+            "High-risk penny stocks"
+        ],
+        'Goal Alignment': [goal, goal, f"For {goal}", "Not suitable"]
+    })
+    st.dataframe(plan_df, use_container_width=True)
     
-    # === ALLOCATION CHART ===
+    # === VISUALS ===
     col1, col2 = st.columns(2)
     with col1:
-        fig = px.pie(df_portfolio.reset_index(), values='Value', names='index', 
-                    title=f"Portfolio Allocation - {goal}")
-        st.plotly_chart(fig, use_container_width=True)
+        # Current vs Target Pie
+        fig_pie = px.pie(values=[current_equity, total_value-current_equity], 
+                        names=['Equity (Current)', 'Debt (Current)'],
+                        title="Current Allocation")
+        st.plotly_chart(fig_pie)
     
     with col2:
-        st.markdown("### 🎯 Why These Stocks?")
-        st.write(f"**Goal**: {goal}")
-        st.write("• **Blue-chip stability** for long-term")
-        st.write("• **High-growth momentum** for short-term")
-        st.write("• **Live NSE prices**")
-        st.write("• **Risk-matched** to your profile")
+        fig_target = px.pie(values=[equity_target, debt_target], 
+                           names=['Equity (Target)', 'Debt (Target)'],
+                           title=f"Target for {goal}")
+        st.plotly_chart(fig_target)
     
-    # === TRADING SIGNALS ===
-    st.markdown('<div class="card"><h2>📈 Trading Signals</h2></div>', unsafe_allow_html=True)
-    signals_df = pd.DataFrame({
-        'Recommendation': ['HOLD Top Performers', 'ADD on Dips', 'Rebalance Monthly'],
-        'Stocks': ['TCS.NS, RELIANCE.NS', 'INFY.NS, HDFCBANK.NS', 'All holdings'],
-        'Time Horizon': ['Long-term', '3-6 months', 'Monthly']
+    # === FUTURE ADDITIONS ===
+    st.subheader("➕ Future Monthly Additions")
+    future_df = pd.DataFrame({
+        'Month': ['Apr 2026', 'May 2026', 'Jun 2026'],
+        'Amount': ['₹25,000', '₹25,000', '₹25,000'],
+        'Allocation': ['60% Equity / 40% Debt', '60% Equity / 40% Debt', '60% Equity / 40% Debt'],
+        'Suggested Stocks': ['HDFCBANK.NS + GSec', 'LT.NS + Bonds', 'NESTLEIND.NS + FDs']
     })
-    st.dataframe(signals_df)
+    st.dataframe(future_df)
     
-    # === RISK ANALYSIS ===
-    st.markdown('<div class="card"><h2>⚠️ Risk Profile Analysis</h2></div>', unsafe_allow_html=True)
-    rcol1, rcol2, rcol3 = st.columns(3)
-    rcol1.metric("📊 Expected Return", f"{(risk_profile=='High')*25+(risk_profile=='Medium')*18+(risk_profile=='Low')*12}%")
-    rcol2.metric("📉 Max Drawdown", f"-{(risk_profile=='High')*15+(risk_profile=='Medium')*10+(risk_profile=='Low')*6}%")
-    rcol3.metric("🎯 Recommended Horizon", f"{5 if risk_profile=='Low' else 3 if risk_profile=='Medium' else 1} years")
-    
-    # EXPORT
-    csv_data = df_portfolio.reset_index().to_csv(index=False)
-    st.download_button("📥 Download My Portfolio", csv_data, "recommended-portfolio.csv")
-    
-    st.balloons()
-    st.success(f"✅ **Portfolio ready for {goal}!** Download & invest!")
+    # DOWNLOAD
+    full_report = pd.concat([df_display, plan_df])
+    st.download_button("📥 Download Rebalance Plan", full_report.to_csv(), "rebalance-plan.csv")
 
-st.info("👆 Select goal → Amount → Risk → GENERATE = Your personalized NSE portfolio!")
+st.info("📁 Upload your demat CSV → Select goal → REBALANCE = Your personalized plan!")
