@@ -1,110 +1,140 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import yfinance as yf
+from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
-import yfinance as yf
 
-st.set_page_config(layout="wide", page_title="NSE Portfolio Rebalancer")
-st.markdown("""
-<style>
-.pro-header {font-size: 2.8rem; color: #1e40af; font-weight: 800; text-align: center;}
-.card {background: linear-gradient(145deg, #f8fafc, #e2e8f0); padding: 2rem; border-radius: 20px; margin: 1rem 0; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
-.metric-pro {background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 1.5rem; border-radius: 15px; text-align: center;}
-</style>
-""", unsafe_allow_html=True)
+# Page config
+st.set_page_config(page_title="AI Portfolio Manager", layout="wide", page_icon="💰")
 
-st.markdown('<h1 class="pro-header">🎯 NSE/BSE Portfolio Rebalancer</h1>', unsafe_allow_html=True)
-st.markdown("*AI Rebalancing • Live Prices • Goal-Based Optimization • Professional Analytics*")
+# Title
+st.title("💰 AI Portfolio Manager")
+st.markdown("---")
 
-# === SIMULATED CURRENT PORTFOLIO ===
-st.markdown('<div class="card"><h2>📊 Your Current Portfolio</h2></div>', unsafe_allow_html=True)
-current_portfolio = {
-    'TCS.NS': {'Qty': 25, 'Price': 4200},
-    'RELIANCE.NS': {'Qty': 8, 'Price': 2950},
-    'INFY.NS': {'Qty': 30, 'Price': 1850},
-    'HDFCBANK.NS': {'Qty': 15, 'Price': 1650},
-    'SBIN.NS': {'Qty': 50, 'Price': 850}
+# Sidebar
+st.sidebar.header("📈 Portfolio Settings")
+
+# Portfolio input
+st.sidebar.subheader("1. Enter Your Holdings")
+col1, col2, col3 = st.sidebar.columns(3)
+with col1: symbol1 = st.text_input("Symbol 1", value="RELIANCE.NS")
+with col2: qty1 = st.number_input("Qty 1", value=10.0)
+with col3: price1 = st.number_input("Price ₹ 1", value=2500.0)
+
+with col1: symbol2 = st.text_input("Symbol 2", value="TCS.NS") 
+with col2: qty2 = st.number_input("Qty 2", value=5.0)
+with col3: price2 = st.number_input("Price ₹ 2", value=3800.0)
+
+# Target allocation
+st.sidebar.subheader("2. Target Allocation (%)")
+target_alloc = {}
+tickers = [symbol1, symbol2]
+for i, ticker in enumerate(tickers):
+    alloc = st.sidebar.slider(f"{ticker}", 0, 100, 50, key=f"alloc_{i}")
+    target_alloc[ticker] = alloc / 100
+
+# Create portfolio dataframe
+portfolio_data = {
+    'Symbol': [symbol1, symbol2],
+    'Quantity': [qty1, qty2],
+    'Price': [price1, price2],
+    'Value': [qty1*price1, qty2*price2]
 }
+df_portfolio = pd.DataFrame(portfolio_data)
+df_portfolio = df_portfolio.set_index('Symbol')
 
-# Live price update simulation
-for stock in current_portfolio:
-    current_portfolio[stock]['Live Price'] = current_portfolio[stock]['Price'] * (1 + np.random.uniform(-0.03, 0.03))
-    current_portfolio[stock]['Value'] = current_portfolio[stock]['Qty'] * current_portfolio[stock]['Live Price']
+# Current allocation
+total_value = df_portfolio['Value'].sum()
+current_pct = df_portfolio['Value'] / total_value
 
-df_current = pd.DataFrame(current_portfolio).T.round(0)
-total_value = df_current['Value'].sum()
+# ============================================================================
+# 1. PORTFOLIO SUMMARY 
+# ============================================================================
+st.subheader("📊 Portfolio Summary")
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Total Value", f"₹{total_value:,.0f}")
+col2.metric("Largest Holding", f"{current_pct.idxmax()} ({current_pct.max()*100:.1f}%)")
+col3.metric("Holdings", len(df_portfolio))
+col4.metric("Avg Price", f"₹{df_portfolio['Price'].mean():.0f}")
 
-col1, col2, col3 = st.columns(3)
-col1.metric("💰 Current Value", f"₹{total_value:,.0f}")
-col2.metric("📈 Today P&L", f"+₹{(total_value*0.012):,.0f}", "+1.2%")
-col3.metric("⚠️ Concentration Risk", "High")
+st.dataframe(df_portfolio, width="stretch")
 
-st.dataframe(df_current[['Qty', 'Live Price', 'Value']], use_container_width=True)
+# Pie chart
+fig_pie = px.pie(df_portfolio, values='Value', names=df_portfolio.index, 
+                 title="Current Allocation", hole=0.4)
+st.plotly_chart(fig_pie, use_container_width=True)
 
-# === GOAL SELECTION ===
-st.markdown('<div class="card"><h2>🎯 Select Rebalancing Goal</h2></div>', unsafe_allow_html=True)
-col1, col2 = st.columns([1,3])
-goal = st.selectbox("Investment Horizon", ["Long-term (5+ years)", "Medium-term (2-5 years)", "Short-term (1-2 years)"])
-monthly_sip = st.number_input("💰 Monthly SIP (₹)", 10000, 100000, 25000)
+# ============================================================================
+# 2. TARGET ALLOCATION VISUALIZATION
+# ============================================================================
+st.subheader("🎯 Target vs Current Allocation")
 
-# === TARGET ALLOCATION BY GOAL ===
-targets = {
-    "Long-term (5+ years)": [0.25, 0.20, 0.15, 0.15, 0.10, 0.15],  # TCS, REL, INFY, HDFC, SBIN, Others
-    "Medium-term (2-5 years)": [0.20, 0.25, 0.20, 0.20, 0.10, 0.05],
-    "Short-term (1-2 years)": [0.15, 0.20, 0.25, 0.20, 0.20, 0.00]
-}
-target_alloc = targets[goal]
+# Target series (convert dict to Series)
+target_series = pd.Series(target_alloc)
+target_df = pd.DataFrame({
+    'Current': current_pct.reindex(target_series.index, fill_value=0),
+    'Target': target_series
+}).fillna(0)
 
-# === REBALANCING CALCULATION ===
-st.markdown('<div class="card"><h2>⚖️ Rebalancing Required</h2></div>', unsafe_allow_html=True)
-stocks = list(current_portfolio.keys())
-current_pct = df_current['Value'] / total_value
+fig_compare = go.Figure()
+fig_compare.add_trace(go.Bar(name='Current', x=target_df.index, y=target_df['Current']*100))
+fig_compare.add_trace(go.Bar(name='Target', x=target_df.index, y=target_df['Target']*100))
+fig_compare.update_layout(barmode='group', title="Allocation Comparison")
+st.plotly_chart(fig_compare, use_container_width=True)
 
-rebalance_plan = pd.DataFrame({
-    'Stock': stocks,
-    'Current %': (current_pct * 100).round(1),
-    'Target %': (np.array(target_alloc) * 100).round(1),
-    'Action': ['SELL' if p > t+5 else 'BUY' if p < t-5 else 'HOLD' for p, t in zip(current_pct, target_alloc)],
-    'Amount ₹': np.abs((current_pct - target_alloc) * total_value / 100).round(0)
-})
+# ============================================================================
+# 3. REBALANCE PLAN (CRASH-PROOF - THE COMPLETE FIX)
+# ============================================================================
+st.subheader("🔄 **Rebalance Plan**")
+st.markdown("---")
 
-st.dataframe(rebalance_plan, use_container_width=True)
+# CRITICAL FIX: Align arrays by common assets ONLY
+portfolio_assets = df_portfolio.index.values
+target_assets = target_series.index.values
+common_assets = np.intersect1d(portfolio_assets, target_assets)
 
-# === VISUAL COMPARISON ===
-col1, col2 = st.columns(2)
-with col1:
-    fig_current = px.pie(values=current_pct, names=stocks, title="Current Allocation")
-    st.plotly_chart(fig_current, use_container_width=True)
+if len(common_assets) == 0:
+    st.error("❌ **No matching assets!** Add same tickers to both portfolio and targets.")
+else:
+    # ALIGN ARRAYS (THIS SOLVES THE ERROR)
+    mask = np.isin(portfolio_assets, common_assets)
+    current_aligned = current_pct[mask]
+    target_aligned = target_series.loc[common_assets].values
+    
+    # Rebalance calculations
+    pct_diff = current_aligned - target_aligned
+    total_value = df_portfolio['Value'].sum()
+    actions = []
+    amounts = []
+    
+    for i, (asset, curr, tgt, diff) in enumerate(zip(common_assets, current_aligned, target_aligned, pct_diff)):
+        if diff > 0.05:
+            actions.append("🔴 **SELL**")
+            amounts.append(abs(diff * total_value))
+        elif diff < -0.05:
+            actions.append("🟢 **BUY**")
+            amounts.append(abs(diff * total_value))
+        else:
+            actions.append("🟡 **HOLD**")
+            amounts.append(0)
+    
+    # Create rebalance table
+    rebalance_df = pd.DataFrame({
+        'Asset': common_assets,
+        'Current %': [f"{p*100:.1f}%" for p in current_aligned],
+        'Target %': [f"{t*100:.1f}%" for t in target_aligned],
+        'Action': actions,
+        'Amount ₹': [f"₹{int(a):,}" if a > 0 else "-" for a in amounts]
+    })
+    
+    st.dataframe(rebalance_df, width="stretch")
+    
+    # Cash summary
+    cash_needed = sum([a for a in amounts if a > 0])
+    st.success(f"💰 **Total Cash Needed: ₹{int(cash_needed):,}**")
 
-with col2:
-    fig_target = px.pie(values=target_alloc, names=stocks, title=f"Target ({goal})")
-    st.plotly_chart(fig_target, use_container_width=True)
-
-# === FUTURE SIP SUGGESTIONS ===
-st.markdown('<div class="card"><h2>➕ Next SIP Allocation (₹{:,})</h2></div>'.format(monthly_sip), unsafe_allow_html=True)
-sip_plan = pd.DataFrame({
-    'Stock': stocks,
-    'SIP Amount': (target_alloc * monthly_sip).round(0),
-    'Approx Shares': ((target_alloc * monthly_sip) / df_current['Live Price']).round(1),
-    'Rationale': ['Stable Bluechip', 'Market Leader', 'Tech Growth', 'Banking Sector', 'PSU Revival', 'Diversification']
-})
-st.dataframe(sip_plan)
-
-# === PROFESSIONAL METRICS ===
-st.markdown('<div class="card"><h2>📊 Professional Metrics</h2></div>', unsafe_allow_html=True)
-mcol1, mcol2, mcol3, mcol4 = st.columns(4)
-mcol1.metric("Expected Return", f"{12+(5 if goal=='Long-term' else 8 if goal=='Medium-term' else 15)}%")
-mcol2.metric("Volatility", "13.2%")
-mcol3.metric("Sharpe Ratio", "1.42")
-mcol4.metric("Rebalance Score", f"{100-np.sum(np.abs(current_pct-target_alloc)*100):.0f}/100")
-
-# === ACTION SUMMARY ===
-st.markdown('<div class="card"><h2>✅ Action Summary</h2></div>', unsafe_allow_html=True)
-st.success(f"""
-**IMMEDIATE**: {len(rebalance_plan[rebalance_plan['Action']=='SELL'])} stocks to SELL  
-**MONTHLY SIP**: ₹{monthly_sip:,} → {len(sip_plan[sip_plan['SIP Amount']>0])} allocations  
-**Goal**: {goal} → Professional rebalanced!
-""")
-
-st.download_button("📥 Download Complete Plan", rebalance_plan.to_csv(), "rebalance-plan.csv")
+# Footer
+st.markdown("---")
+st.markdown("⭐ **Built with Streamlit | Deployed on Streamlit Cloud**")
