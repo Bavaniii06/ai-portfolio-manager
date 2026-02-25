@@ -12,10 +12,9 @@ st.markdown("""
 **Professional portfolio management • Live market analysis • Personalized strategy**
 """)
 
-# SIMULATED DEMAT (Real Zerodha/Groww format)
+# SIMULATED DEMAT
 @st.cache_data(ttl=1800)
 def load_sample_demat():
-    """Your sample demat holdings"""
     return pd.DataFrame({
         'Symbol': ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'ICICIBANK.NS'],
         'Quantity': [12.0, 8.0, 25.0, 15.0, 20.0],
@@ -34,16 +33,16 @@ goal = st.sidebar.selectbox("Primary Goal", [
 ])
 risk_tolerance = st.sidebar.selectbox("Risk Comfort", ["Low", "Medium", "High"])
 
-# LOAD SAMPLE DEMAT
-if st.button("📱 **Load Sample Demat**", type="primary"):
+# LOAD SAMPLE
+if st.button('📱 **Load Sample Demat**', type="primary"):
     st.session_state.demat = load_sample_demat()
-    st.success("✅ **Sample demat loaded** (RELIANCE 12 + TCS 8 + ...)")
+    st.success('✅ **Sample demat loaded** (RELIANCE 12 + TCS 8 + ...)')
 
-# MAIN DASHBOARD
+# MAIN ANALYSIS
 if 'demat' in st.session_state:
     df = st.session_state.demat.copy()
     
-    # UPDATE LIVE PRICES
+    # LIVE PRICES
     symbols = df['Symbol'].tolist()
     try:
         live_data = yf.download(symbols, period="1d", progress=False)['Adj Close'].iloc[-1]
@@ -55,14 +54,14 @@ if 'demat' in st.session_state:
     
     total_value = df['Current_Value'].sum()
     
-    # DASHBOARD METRICS
+    # METRICS
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("💰 **Portfolio Value**", f"₹{total_value:,.0f}")
     col2.metric("📈 **Total PnL**", f"₹{df['PnL_Rs'].sum():,.0f}")
     col3.metric("⚖️ **Equity %**", f"{100:.0f}%")
     col4.metric("🎯 **Risk Score**", f"{min((65-age)*1.2, 85):.0f}%")
     
-    # PORTFOLIO TABLE
+    # HOLDINGS TABLE
     st.subheader("**📊 Your Current Holdings**")
     display_df = df[['Symbol', 'Quantity', 'Avg_Price', 'Live_Price', 'PnL_%', 'Current_Value']].round(0)
     st.dataframe(display_df, use_container_width=True)
@@ -70,14 +69,12 @@ if 'demat' in st.session_state:
     # ALLOCATION PIE
     col_p1, col_p2 = st.columns(2)
     with col_p1:
-        fig_pie = px.pie(df, values='Current_Value', names='Symbol', hole=0.4,
-                        title="Current Allocation")
+        fig_pie = px.pie(df, values='Current_Value', names='Symbol', hole=0.4, title="Current Allocation")
         st.plotly_chart(fig_pie, use_container_width=True)
     
     # AI RECOMMENDATIONS
     st.subheader("🤖 **AI Portfolio Recommendations**")
     
-    # PERSONALIZED STRATEGY
     equity_alloc = min((65-age)/65 * 80, 90) if risk_tolerance != "Low" else min((65-age)/65 * 50, 60)
     monthly_sip = annual_salary * 0.15 / 12
     
@@ -86,17 +83,17 @@ if 'demat' in st.session_state:
     rec2.metric("💸 **Monthly SIP**", f"₹{monthly_sip:,.0f}")
     rec3.metric("⏳ **Time Horizon**", f"{5 if '5yr' in goal else 10 if 'Retirement' in goal else 3} yrs")
     
-    # HOLDING SIGNALS (Performance + Market momentum)
+    # SIGNALS
     df['Signal'] = np.where(df['PnL_%'] > 15, "🟢 STRONG HOLD", 
                            np.where(df['PnL_%'] > 5, "🟢 HOLD", 
                                    np.where(df['PnL_%'] > -10, "🟡 TRIM", "🔴 SELL")))
     
-    st.subheader("**📋 Action Plan for Each Holding**")
+    st.subheader("**📋 Action Plan**")
     signals_df = df[['Symbol', 'PnL_%', 'Signal']].round(1)
     st.dataframe(signals_df, use_container_width=True)
     
-    # MARKET TRENDS + NEW RECOMMENDATIONS [web:46][web:47]
-    st.subheader("**🔥 Top Market Picks (Momentum Leaders)**")
+    # MOMENTUM PICKS
+    st.subheader("**🔥 Top Market Picks**")
     momentum_stocks = ["BAJFINANCE.NS", "CHOLAFIN.NS", "LT.NS", "ASIANPAINT.NS", "BSE.NS"]
     try:
         mom_data = yf.download(momentum_stocks, period="1mo", progress=False)['Adj Close']
@@ -113,33 +110,37 @@ if 'demat' in st.session_state:
     except:
         st.info("Momentum stocks loading...")
     
-    # STRATEGIC ADVICE
+    # STRATEGY ADVICE
     st.markdown("### **📈 Professional Strategy**")
     advice = f"""
-    **Your Profile:** Age {age} • Salary ₹{annual_salary:,} • Goal: {goal} • Risk: {risk_tolerance}
+    **Your Profile:** Age {age} • Salary ₹{annual_salary:,}/yr • Goal: {goal} • Risk: {risk_tolerance}
     
-    **Current Assessment:**
-    • Portfolio Value: ₹{total_value:,.0f}
-    • Concentration: {df['Current_Value'].max()/total_value*100:.0f}% in {df.loc[df['Current_Value'].idxmax(), 'Symbol']}
+    **Portfolio Health:**
+    • Value: ₹{total_value:,.0f} | Concentration: {df['Current_Value'].max()/total_value*100:.0f}%
     • Performance: {df['PnL_%'].mean():+.1f}% avg PnL
     
-    **Recommendations:**
-    1. **{df['Signal'].iloc[0]} {df['Symbol'].iloc[0]}** ({df['PnL_%'].iloc[0]:+.1f}%) - {df['Signal'].iloc[0]}
-    2. **SIP ₹{monthly_sip:,.0f}/mo** into momentum leaders above
-    3. **Target Allocation:** {equity_alloc:.0f}% Equity | Rebalance quarterly
-    4. **New Position:** Add 10% to top momentum pick
-    
-    **Expected Outcome:** 14-18% CAGR aligned to your {goal}
+    **Immediate Actions:**
     """
     st.markdown(advice)
     
-    # DOWNLOAD REPORT
-    report_df = pd.concat([display_df.assign(Section='Holdings'), mom_df.assign(Section='Recommendations')])
+    for _, row in df.iterrows():
+        st.markdown(f"• **{row['Signal']}** {row['Symbol']} ({row['PnL_%']:+.1f}%)")
+    
+    st.markdown(f"""
+    **Next Steps:**
+    1. SIP ₹{monthly_sip:,.0f}/month in top momentum picks
+    2. Target: {equity_alloc:.0f}% Equity allocation
+    3. Rebalance quarterly when >5% deviation
+    4. **Expected:** 14-18% CAGR for your {goal}
+    """)
+    
+    # DOWNLOAD
+    report_df = pd.concat([display_df.assign(Section='Holdings'), mom_df.assign(Section='Recommendations') if 'mom_df' in locals() else pd.DataFrame()])
     csv = report_df.to_csv(index=False)
-    st.download_button("📥 **Download Advisor Report**", csv, "ai-advisor-report.csv")
+    st.download_button("📥 **Download Report**", csv, "ai-advisor-report.csv")
 
 else:
-    st.info("👆 **Click "Load Sample Demat"** to start (RELIANCE + TCS sample)")
+    st.info('👆 **Click "Load Sample Demat"** to start (RELIANCE + TCS sample)')
 
 st.markdown("---")
-st.markdown("*🤖 Professional AI Advisor | Live NSE data | Personalized for your goals*")
+st.markdown("*🤖 Professional AI Advisor | Live NSE | Goal-based portfolio management*")
