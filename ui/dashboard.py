@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<h1 class="main-header">🤖 AI Portfolio Pro</h1>', unsafe_allow_html=True)
-st.markdown("*₹5L Sample Loaded • 2000+ NSE Universe • TIME PERIOD SPECIFIC • Risk/Age/Income Optimized*")
+st.markdown("*₹10K MIN Salary Optimized • 2000+ NSE Universe • TIME PERIOD SPECIFIC • Risk/Age/Income Optimized*")
 
 # NSE UNIVERSE - TIME HORIZON SPECIFIC
 NSE_TIME_HORIZONS = {
@@ -54,14 +54,18 @@ ASSET_NAMES = {
     'BORORENEW.NS': 'Boro Renewables', 'ADANIENT.NS': 'Adani Enterprises'
 }
 
-# USER INPUTS
+# USER INPUTS - ₹10K MIN SALARY
 col1, col2, col3, col4 = st.columns(4)
 age = col1.slider("👤 Age", 22, 65, 28)
-income_lakhs = col2.number_input("💰 Income ₹L", 3, 50, 7)
+min_salary = col2.number_input("💸 Monthly Salary ₹", 10000, 500000, 10000, step=5000)
 time_period = col3.selectbox("⏳ Time Period", list(NSE_TIME_HORIZONS.keys()))
 risk_appetite = col4.selectbox("⚠️ Risk", ["Low", "Medium", "High"])
 
-# SAMPLE PORTFOLIO ₹5L
+# INCOME FACTOR
+income_factor = min(max(min_salary/100000, 0.3), 2.0)
+st.info(f"💡 Income Factor: {income_factor:.1f}x (₹{min_salary:,} salary)")
+
+# SAMPLE PORTFOLIO
 st.markdown('<div class="success-box">✅ **SAMPLE ₹5L PORTFOLIO LOADED**</div>', unsafe_allow_html=True)
 
 sample_assets = ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'NIFTYBEES.NS']
@@ -85,7 +89,7 @@ c4.metric("📈 Current Return", f"{sample_portfolio['PnL_%'].mean():+.1f}%")
 
 st.dataframe(sample_portfolio[['Name', 'Qty', 'Price', 'Value', 'PnL_%']].round(0), use_container_width=True)
 
-# TIME PERIOD SPECIFIC RECOMMENDATIONS
+# TIME PERIOD RECOMMENDATIONS
 st.subheader(f"**🎯 {time_period} Recommendations**")
 st.markdown(f'<span class="time-badge" style="background: {"#ef4444" if "Emergency" in time_period else "#f59e0b" if "Short" in time_period else "#10b981" if "Mid" in time_period else "#8b5cf6"}; color: white;">Time Horizon: {NSE_TIME_HORIZONS[time_period]["risk"]}</span>', unsafe_allow_html=True)
 
@@ -97,19 +101,23 @@ recommended_assets = pd.DataFrame({
     'Risk_Level': horizon_data["risk"]
 })
 
-# PERSONALIZED QUANTITIES (Age/Income/Risk adjusted)
-portfolio_size = 500000  # ₹5L
+# PERSONALIZED QUANTITIES (₹10K Salary Optimized)
+portfolio_size = 50000 * income_factor
+st.success(f"🎯 Portfolio Size: ₹{portfolio_size:,.0f} (Salary ₹{min_salary:,} Adjusted)")
+
 risk_factor = {"Low": 0.7, "Medium": 1.0, "High": 1.3}[risk_appetite]
 age_factor = min((65-age)/65 * 1.5, 1.5)
-income_factor = min(income_lakhs/10, 2.0)
 
 recommended_assets['Buy_Qty'] = np.clip(
-    portfolio_size * 0.12 * risk_factor * age_factor * income_factor / recommended_assets['Expected_Return'] * 100,
-    5, 250
+    portfolio_size * 0.15 * risk_factor * age_factor * income_factor / recommended_assets['Expected_Return'] * 100,
+    max(1, min_salary//2800), 100
 ).round(0).astype(int)
 
 recommended_assets['Investment'] = (recommended_assets['Buy_Qty'] * 2800).round(0)
 recommended_assets['Rank'] = range(1, len(recommended_assets)+1)
+recommended_assets['Action'] = recommended_assets['Rank'].apply(
+    lambda r: '🟢 BUY' if r <= 3 else '🔵 HOLD' if r <= 6 else '🟡 MONITOR'
+)
 
 st.dataframe(recommended_assets[['Rank', 'Name', 'Expected_Return', 'Buy_Qty', 'Investment']], use_container_width=True)
 
@@ -125,23 +133,36 @@ with col2:
     fig_recommend.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_recommend, use_container_width=True)
 
-# EXECUTION PLAN
+# FIXED EXECUTION PLAN - PROPER PANDAS STYLER
 st.markdown("### **🚀 Execute This Plan**")
 
-top3 = recommended_assets.head(3)
+top6 = recommended_assets.head(6)
 st.markdown(f"""
-**Your Profile:** Age {age} | Income ₹{income_lakhs}L | **{time_period}** | Risk: {risk_appetite}
+**Your Profile:** Age {age} | Salary **₹{min_salary:,}/month** | **{time_period}** | Risk: {risk_appetite}
 
-**Top 3 BUY Orders:**
-1. **{top3.iloc[0]['Name']}** ({top3.iloc[0]['Expected_Return']}%) → **{int(top3.iloc[0]['Buy_Qty'])} qty** ₹{top3.iloc[0]['Investment']:,.0f}
-2. **{top3.iloc[1]['Name']}** ({top3.iloc[1]['Expected_Return']}%) → **{int(top3.iloc[1]['Buy_Qty'])} qty** ₹{top3.iloc[1]['Investment']:,.0f}
-3. **{top3.iloc[2]['Name']}** ({top3.iloc[2]['Expected_Return']}%) → **{int(top3.iloc[2]['Buy_Qty'])} qty** ₹{top3.iloc[2]['Investment']:,.0f}
+**Portfolio Size: ₹{portfolio_size:,.0f}** (₹{min_salary:,} Salary Optimized)
 
-**Portfolio Projection (₹5L → {time_period.split("(")[1].split("yr")[0]}yr):**
-• Expected CAGR: **{recommended_assets['Expected_Return'].mean():.0f}%**
-• Future Value: **₹{total_value * (1 + recommended_assets['Expected_Return'].mean()/100)**(int(time_period.split(" ")[0].split("-")[1].split("yr")[0])):,.0f}**
-• Risk Level: **{NSE_TIME_HORIZONS[time_period]["risk"]}**
+**Recommendations ({len(top6)} stocks):**
 """)
+
+# FIXED: Proper pandas styler with RGB colors
+def highlight_action(val):
+    if 'BUY' in str(val):
+        return 'background-color: rgb(16, 185, 129)'  # Green
+    elif 'HOLD' in str(val):
+        return 'background-color: rgb(59, 130, 246)'  # Blue
+    elif 'MONITOR' in str(val):
+        return 'background-color: rgb(245, 158, 11)'  # Orange
+    return ''
+
+styled_table = top6.style.applymap(highlight_action, subset=['Action'])
+st.dataframe(styled_table, use_container_width=True)
+
+# TOP 3 BUY ORDERS
+top3 = top6[top6['Action']=='🟢 BUY']
+st.markdown(f"**💰 Top BUY Orders (₹{min_salary:,} Salary):**")
+for i, (_, row) in enumerate(top3.iterrows(), 1):
+    st.markdown(f"**{i}. {row['Name']}** ({row['Expected_Return']}%) → **{int(row['Buy_Qty'])} shares** ₹{row['Investment']:,.0f}")
 
 # RISK-REWARD GAUGE
 col1, col2 = st.columns(2)
@@ -174,4 +195,4 @@ full_plan = pd.concat([
 st.download_button("📥 **Download Complete Plan**", full_plan.to_csv(index=False), "ai-portfolio-plan.csv")
 
 st.markdown("---")
-st.markdown("*🤖 **TIME PERIOD SPECIFIC** | 2000+ NSE Coverage | Age/Income/Risk Optimized | ₹5L Sample Auto-Loaded*")
+st.markdown("*🤖 **₹10K MIN Salary** | 2000+ NSE Coverage | Age/Income/Risk Optimized | BUY/HOLD Signals*")
