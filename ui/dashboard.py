@@ -89,16 +89,20 @@ c4.metric("📈 Current Return", f"{sample_portfolio['PnL_%'].mean():+.1f}%")
 
 st.dataframe(sample_portfolio[['Name', 'Qty', 'Price', 'Value', 'PnL_%']].round(0), use_container_width=True)
 
-# TIME PERIOD RECOMMENDATIONS - FIXED RISK LEVEL
+# TIME PERIOD RECOMMENDATIONS - ✅ FIXED LENGTH MISMATCH
 st.subheader(f"**🎯 {time_period} Recommendations**")
 st.markdown(f'<span class="time-badge" style="background: {"#ef4444" if "Emergency" in time_period else "#f59e0b" if "Short" in time_period else "#10b981" if "Mid" in time_period else "#8b5cf6"}; color: white;">Time Horizon: {NSE_TIME_HORIZONS[time_period]["risk"]}</span>', unsafe_allow_html=True)
 
 horizon_data = NSE_TIME_HORIZONS[time_period]
+n_assets = len(horizon_data["assets"])  # ✅ DYNAMIC LENGTH
+n_returns = len(horizon_data["returns"])
+
+# ✅ FIXED: Use actual available length
 recommended_assets = pd.DataFrame({
-    'Symbol': horizon_data["assets"][:8],
-    'Name': [ASSET_NAMES[s] for s in horizon_data["assets"][:8]],
-    'Expected_Return': horizon_data["returns"][:8],
-    'Risk_Level': [NSE_TIME_HORIZONS[time_period]["risk"]] * 8  # ✅ FIXED: Dynamic risk level
+    'Symbol': horizon_data["assets"][:n_assets],
+    'Name': [ASSET_NAMES[s] for s in horizon_data["assets"][:n_assets]],
+    'Expected_Return': horizon_data["returns"][:n_returns],
+    'Risk_Level': [NSE_TIME_HORIZONS[time_period]["risk"]] * n_assets  # ✅ SAME LENGTH
 })
 
 # PERSONALIZED QUANTITIES (₹10K Salary Optimized)
@@ -119,7 +123,7 @@ recommended_assets['Action'] = recommended_assets['Rank'].apply(
     lambda r: '🟢 BUY' if r <= 3 else '🔵 HOLD' if r <= 6 else '🟡 MONITOR'
 )
 
-# ✅ FIXED: SHOW RISK_LEVEL IN TABLE
+# ✅ SHOW ALL COLUMNS INCLUDING Risk_Level
 st.dataframe(recommended_assets[['Rank', 'Name', 'Risk_Level', 'Expected_Return', 'Buy_Qty', 'Investment', 'Action']], use_container_width=True)
 
 # VISUALS
@@ -134,7 +138,7 @@ with col2:
     fig_recommend.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_recommend, use_container_width=True)
 
-# FIXED EXECUTION PLAN
+# EXECUTION PLAN
 st.markdown("### **🚀 Execute This Plan**")
 
 top6 = recommended_assets.head(6)
@@ -146,14 +150,14 @@ st.markdown(f"""
 **Recommendations ({len(top6)} stocks):**
 """)
 
-# FIXED: Proper pandas styler with RGB colors
+# Color-coded table
 def highlight_action(val):
     if 'BUY' in str(val):
-        return 'background-color: rgb(16, 185, 129)'  # Green
+        return 'background-color: rgb(16, 185, 129)'
     elif 'HOLD' in str(val):
-        return 'background-color: rgb(59, 130, 246)'  # Blue
+        return 'background-color: rgb(59, 130, 246)'
     elif 'MONITOR' in str(val):
-        return 'background-color: rgb(245, 158, 11)'  # Orange
+        return 'background-color: rgb(245, 158, 11)'
     return ''
 
 styled_table = top6.style.applymap(highlight_action, subset=['Action'])
