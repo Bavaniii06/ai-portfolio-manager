@@ -89,7 +89,7 @@ c4.metric("📈 Current Return", f"{sample_portfolio['PnL_%'].mean():+.1f}%")
 
 st.dataframe(sample_portfolio[['Name', 'Qty', 'Price', 'Value', 'PnL_%']].round(0), use_container_width=True)
 
-# TIME PERIOD RECOMMENDATIONS
+# TIME PERIOD RECOMMENDATIONS - FIXED RISK LEVEL
 st.subheader(f"**🎯 {time_period} Recommendations**")
 st.markdown(f'<span class="time-badge" style="background: {"#ef4444" if "Emergency" in time_period else "#f59e0b" if "Short" in time_period else "#10b981" if "Mid" in time_period else "#8b5cf6"}; color: white;">Time Horizon: {NSE_TIME_HORIZONS[time_period]["risk"]}</span>', unsafe_allow_html=True)
 
@@ -98,7 +98,7 @@ recommended_assets = pd.DataFrame({
     'Symbol': horizon_data["assets"][:8],
     'Name': [ASSET_NAMES[s] for s in horizon_data["assets"][:8]],
     'Expected_Return': horizon_data["returns"][:8],
-    'Risk_Level': horizon_data["risk"]
+    'Risk_Level': [NSE_TIME_HORIZONS[time_period]["risk"]] * 8  # ✅ FIXED: Dynamic risk level
 })
 
 # PERSONALIZED QUANTITIES (₹10K Salary Optimized)
@@ -119,7 +119,8 @@ recommended_assets['Action'] = recommended_assets['Rank'].apply(
     lambda r: '🟢 BUY' if r <= 3 else '🔵 HOLD' if r <= 6 else '🟡 MONITOR'
 )
 
-st.dataframe(recommended_assets[['Rank', 'Name', 'Expected_Return', 'Buy_Qty', 'Investment']], use_container_width=True)
+# ✅ FIXED: SHOW RISK_LEVEL IN TABLE
+st.dataframe(recommended_assets[['Rank', 'Name', 'Risk_Level', 'Expected_Return', 'Buy_Qty', 'Investment', 'Action']], use_container_width=True)
 
 # VISUALS
 col1, col2 = st.columns(2)
@@ -133,7 +134,7 @@ with col2:
     fig_recommend.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_recommend, use_container_width=True)
 
-# FIXED EXECUTION PLAN - PROPER PANDAS STYLER
+# FIXED EXECUTION PLAN
 st.markdown("### **🚀 Execute This Plan**")
 
 top6 = recommended_assets.head(6)
