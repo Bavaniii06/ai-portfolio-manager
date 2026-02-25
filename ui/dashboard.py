@@ -4,183 +4,120 @@ import numpy as np
 import yfinance as yf
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime
 
-st.set_page_config(page_title="NSE Demat Pro", page_icon="🏦", layout="wide")
+st.set_page_config(page_title="NSE Advisor Pro", page_icon="🧠", layout="wide")
 
-st.markdown("# 🏦 **NSE Demat Portfolio Pro**")
-st.markdown("**🔗 Simulated Zerodha/Groww • Live NSE • AI Rebalance • P&L Tracking**")
+st.markdown("## 🧠 **Personalized NSE Portfolio Advisor**")
+st.markdown("*AI matches your Age • Salary • Goal to NSE stocks/ETFs*")
 
-# SIMULATED DEMAT DATA (Real Zerodha API format)
-@st.cache_data(ttl=300)  # Refresh every 5 min
-def fetch_simulated_demat():
-    """Simulate real Zerodha KiteConnect.holdings() API"""
-    return pd.DataFrame({
-        'tradingsymbol': ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'ICICIBANK.NS'],
-        'exchange': ['NSE', 'NSE', 'NSE', 'NSE', 'NSE'],
-        'quantity': [12, 8, 25, 15, 20],
-        'average_price': [2850.50, 4150.25, 1625.80, 1820.10, 1185.75],
-        'pnl': [2450.00, -125.50, 1875.20, 450.75, 320.25],
-        'sector': ['Energy', 'IT', 'Banking', 'IT', 'Banking'],
-        'last_price': [2925.60, 4185.20, 1650.40, 1850.90, 1195.50]
-    })
+# PERSONAL PROFILE - AGE GOAL SALARY
+col_age, col_goal, col_salary = st.columns(3)
+age = col_age.slider("👤 **Age**", 20, 65, 28)  # Your age from profile
+goal = col_goal.selectbox("🎯 **Goal**", 
+                         ["Emergency Fund (1yr)", "Short-term (1-3yr)", "Mid-term (3-7yr)", "Retirement (7+yr)"])
+monthly_salary = col_salary.number_input("💰 **Monthly Salary** ₹", 25000, 200000, 60000)
 
-# TABS
-tab1, tab2, tab3, tab4 = st.tabs(["🏦 Demat Sync", "📊 Portfolio", "🔍 Live NSE", "🎯 AI Rebalance"])
+# RISK PROFILE BY AGE + GOAL
+risk_score = min((65-age)/65 * 100, 80)  # 100-age rule
+if goal == "Emergency Fund": risk_score = 20
+elif goal == "Short-term": risk_score = 40
+equity_pct = risk_score / 100 * 0.8  # Conservative adjustment
 
-with tab1:
-    st.subheader("**🔗 Connect Demat (Simulation)**")
-    
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("**🟢 SIMULATE ZERODHA**", type="primary"):
-            st.session_state.demat_data = fetch_simulated_demat()
-            st.success("✅ **Zerodha holdings synced!** (12 RELIANCE + 8 TCS + ...)")
-    
-    with col_btn2:
-        if st.button("**🔵 SIMULATE GROWW**", type="secondary"):
-            # Groww simulation
-            st.session_state.demat_data = pd.DataFrame({
-                'tradingsymbol': ['TCS.NS', 'RELIANCE.NS', 'SBIN.NS'],
-                'quantity': [10, 15, 50],
-                'average_price': [4100, 2800, 750],
-                'pnl': [850, 3750, -1250]
-            })
-            st.success("✅ **Groww holdings synced!**")
-    
-    # DISPLAY SYNCHRONIZED HOLDINGS
-    if 'demat_data' in st.session_state:
-        demat = st.session_state.demat_data
-        st.dataframe(demat[['tradingsymbol', 'quantity', 'average_price', 'pnl']], use_container_width=True)
-        
-        total_pnl = demat['pnl'].sum()
-        col_p1, col_p2 = st.columns(2)
-        col_p1.metric("💰 Total P&L", f"₹{total_pnl:,.0f}")
-        col_p2.metric("📊 Holdings", len(demat))
-
-with tab2:
-    st.subheader("**📊 Real-Time Portfolio**")
-    
-    if 'demat_data' in st.session_state:
-        demat = st.session_state.demat_data.copy()
-        
-        # LIVE PRICES UPDATE
-        symbols = demat['tradingsymbol'].tolist()
-        try:
-            live_prices = yf.download(symbols, period="1d", progress=False)['Adj Close'].iloc[-1]
-            demat['live_price'] = [live_prices.get(s, row['average_price']) for s, row in demat.iterrows()]
-        except:
-            demat['live_price'] = demat['average_price']
-        
-        # CALCULATIONS
-        demat['current_value'] = demat['quantity'] * demat['live_price']
-        demat['pnl_pct'] = ((demat['live_price']/demat['average_price']-1)*100).round(2)
-        total_value = demat['current_value'].sum()
-        
-        # METRICS
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("💰 Portfolio Value", f"₹{total_value:,.0f}")
-        col2.metric("📈 Total P&L", f"₹{demat['pnl'].sum():,.0f}")
-        col3.metric("🎯 Best Stock", f"{demat.loc[demat['pnl_pct'].idxmax(), 'tradingsymbol']} +{demat['pnl_pct'].max():.1f}%")
-        col4.metric("⚠️ Worst Stock", f"{demat.loc[demat['pnl_pct'].idxmin(), 'tradingsymbol']} {demat['pnl_pct'].min():.1f}%")
-        
-        # PORTFOLIO TABLE
-        portfolio_display = demat[['tradingsymbol', 'quantity', 'average_price', 'live_price', 
-                                  'current_value', 'pnl', 'pnl_pct']].round(0)
-        portfolio_display.columns = ['Stock', 'Qty', 'Avg ₹', 'Live ₹', 'Value ₹', 'P&L ₹', 'P&L %']
-        st.dataframe(portfolio_display, use_container_width=True)
-        
-        # ALLOCATION PIE
-        fig_pie = px.pie(values=demat['current_value'], names=demat['tradingsymbol'], 
-                        title="Portfolio Allocation", hole=0.4)
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-        # SECTOR BREAKDOWN
-        sector_pnl = demat.groupby('sector')['pnl'].sum()
-        fig_sector = px.bar(x=sector_pnl.index, y=sector_pnl.values, 
-                          title="Sector P&L", color=sector_pnl.values)
-        st.plotly_chart(fig_sector, use_container_width=True)
-
-with tab3:
-    st.subheader("**🔴 LIVE NSE Market Scanner**")
-    
-    NSE_LIVE = [
-        "RELIANCE.NS","TCS.NS","HDFCBANK.NS","ICICIBANK.NS","BHARTIARTL.NS",
-        "INFY.NS","ITC.NS","LT.NS","AXISBANK.NS","KOTAKBANK.NS"
-    ]
-    
-    col_period, col_sort = st.columns(2)
-    with col_period:
-        period = st.selectbox("Timeframe", ["1d", "5d", "1mo"])
-    with col_sort:
-        sort_by = st.selectbox("Sort", ["Price", "1M %", "Volume"])
-    
-    if st.button("**📡 SCAN LIVE NSE**", type="primary"):
-        with st.spinner("Live NSE data..."):
-            try:
-                data = yf.download(NSE_LIVE, period=period, progress=False)['Adj Close']
-                latest_prices = data.iloc[-1].dropna()
-                change_pct = ((latest_prices / data.iloc[0] - 1) * 100).round(2)
-                
-                live_table = pd.DataFrame({
-                    'Price': latest_prices.round(0),
-                    f'{period.upper()} %': [f"{p:+.2f}%" for p in change_pct]
-                }).sort_values(f'{period.upper()} %', ascending=False, key=lambda x: x.str.rstrip('%').astype(float))
-                
-                st.dataframe(live_table, use_container_width=True)
-                st.success(f"✅ **LIVE NSE** | {datetime.now().strftime('%H:%M IST')}")
-            except Exception as e:
-                st.error(f"⚠️ {e}")
-
-with tab4:
-    st.subheader("**🤖 AI Rebalance + Risk Engine**")
-    
-    if 'demat_data' in st.session_state:
-        df = st.session_state.demat_data.copy()
-        df['current_value'] = df['quantity'] * df['last_price']
-        current_alloc = df['current_value'] / df['current_value'].sum() * 100
-        
-        # TARGET ALLOCATION SLIDERS
-        st.info("🎯 **Set target weights**")
-        target_weights = {}
-        for symbol in df['tradingsymbol'][:4]:  # Top 4
-            target_weights[symbol] = st.slider(
-                f"{symbol}", 0, 60, int(current_alloc[df['tradingsymbol']==symbol].iloc[0]), 1
-            )
-        
-        if st.button("**⚖️ CALCULATE REBALANCE**"):
-            rebalance_plan = []
-            portfolio_value = df['current_value'].sum()
-            
-            for symbol in df['tradingsymbol']:
-                curr_wt = current_alloc[df['tradingsymbol']==symbol].iloc[0]
-                tgt_wt = target_weights.get(symbol, 25)
-                gap = curr_wt - tgt_wt
-                
-                if abs(gap) > 3:
-                    action = "🟢 BUY" if gap < 0 else "🔴 SELL"
-                    trade_value = abs(gap/100 * portfolio_value)
-                else:
-                    action = "🟡 HOLD"
-                    trade_value = 0
-                
-                rebalance_plan.append({
-                    'Stock': symbol,
-                    'Current': f"{curr_wt:.1f}%",
-                    'Target': f"{tgt_wt}%",
-                    'Action': action,
-                    'Trade ₹': f"₹{trade_value:,.0f}"
-                })
-            
-            rebalance_df = pd.DataFrame(rebalance_plan)
-            st.dataframe(rebalance_df, use_container_width=True)
-            
-            buy_trades = rebalance_df[rebalance_df['Action']=='🟢 BUY']['Trade ₹'].str.replace('₹','').str.replace(',','').astype(float)
-            st.metric("💰 Cash Required", f"₹{buy_trades.sum():,.0f}")
-
-# GLOBAL EXPORT
 st.markdown("---")
-if 'demat_data' in st.session_state:
-    csv_data = st.session_state.demat_data.to_csv(index=False)
-    st.download_button("📊 Export Demat CSV", csv_data, "demat-portfolio.csv", "text/csv")
-st.caption("*🏦 Simulated Zerodha/Groww API | Production ready for real API keys*")
+
+# AI RECOMMENDATIONS ENGINE
+st.subheader("🤖 **Your Personalized NSE Portfolio**")
+
+# NSE STOCKS DATABASE - Age/Goal matched
+nse_database = {
+    # Conservative/Low Risk (Age 50+ or Emergency)
+    "Conservative": ["NIFTYBEES.NS", "ICICILIQ.NS", "BANKBEES.NS", "GOLDBEES.NS"],
+    # Balanced (Age 30-50 Mid-term) 
+    "Balanced": ["RELIANCE.NS", "HDFCBANK.NS", "TCS.NS", "NIFTYBEES.NS", "JUNIORBEES.NS"],
+    # Growth (Age 25-40 Short/Mid-term)
+    "Growth": ["INFY.NS", "BHARTIARTL.NS", "LT.NS", "ASIANPAINT.NS", "N100BEES.NS"],
+    # Aggressive (Age <30 Long-term)
+    "Aggressive": ["TATAMOTORS.NS", "JSWSTEEL.NS", "ADANIENT.NS", "MID150BEES.NS"]
+}
+
+# MATCH TO YOUR PROFILE
+if risk_score < 40: profile = "Conservative"
+elif risk_score < 60: profile = "Balanced" 
+elif risk_score < 80: profile = "Growth"
+else: profile = "Aggressive"
+
+recommended_stocks = nse_database[profile][:5]  # Top 5 for you
+
+# LIVE PRICES + PERFORMANCE
+if st.button("📡 **FETCH LIVE NSE DATA**", type="primary"):
+    with st.spinner("Analyzing NSE for your profile..."):
+        try:
+            data = yf.download(recommended_stocks, period="3mo", progress=False)['Adj Close']
+            latest = data.iloc[-1].round(0)
+            returns_1m = ((data.iloc[-1]/data.iloc[-21]-1)*100).round(2) if len(data)>21 else pd.Series(0, index=latest.index)
+            
+            portfolio_df = pd.DataFrame({
+                'Stock': latest.index,
+                'Live ₹': latest.values,
+                '1M %': [f"{r:+.1f}%" for r in returns_1m],
+                'Risk Fit': profile,
+                'For You': ['✅ Yes' if i<3 else '⚠️ Watch' for i in range(len(latest))]
+            })
+            
+            st.session_state.portfolio = portfolio_df
+            st.success("✅ **Live NSE portfolio ready!**")
+        except:
+            st.info("🌐 Live data loading...")
+
+# DISPLAY YOUR PORTFOLIO
+if 'portfolio' in st.session_state:
+    df = st.session_state.portfolio
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🎯 **Recommended Stocks**", len(df))
+    col2.metric("📈 **Avg 1M Return**", f"{df['1M %'].str.rstrip('%').astype(float).mean():+.1f}%")
+    col3.metric("💰 **Monthly SIP**", f"₹{int(monthly_salary*0.2):,}")
+    
+    st.dataframe(df, use_container_width=True)
+    
+    # ALLOCATION PIE
+    fig_pie = px.pie(names=df['Stock'], values=[25000]*len(df), hole=0.4,
+                    title=f"**{profile} Portfolio** - {equity_pct*100:.0f}% Equity")
+    st.plotly_chart(fig_pie, use_container_width=True)
+    
+    # WHY THIS PORTFOLIO
+    st.markdown("### **📋 Why These Stocks For You?**")
+    reasons = {
+        "Conservative": "Nifty ETFs + Gold = Capital protection",
+        "Balanced": "RELIANCE+HDFC bluechips + JuniorBees growth", 
+        "Growth": "IT+Infra leaders + N100 midcaps",
+        "Aggressive": "High-beta industrials + Mid150 growth"
+    }
+    st.info(f"**{profile} Profile** → {reasons[profile]}\n"
+            f"**Age {age}** → {equity_pct*100:.0f}% NSE Equity\n"
+            f"**Salary ₹{monthly_salary:,}** → SIP ₹{int(monthly_salary*0.2):,}/mo\n"
+            f"**Goal {goal}** → {risk_score:.0f}% Risk")
+
+# TRADING SIGNALS
+st.subheader("🎯 **Monthly Action Plan**")
+signals = pd.DataFrame({
+    'Action': ['BUY Top 3', 'HOLD Core', 'SIP Monthly', 'Rebalance Qrtly'],
+    'Stocks': [', '.join(recommended_stocks[:3]), recommended_stocks[3], 'NIFTYBEES.NS', 'All'],
+    'Amount': [f"₹{int(monthly_salary*0.1):,}", '-', f"₹{int(monthly_salary*0.2):,}", '5% deviation'],
+    'Why': [f"{profile} winners", 'Stable base', f"20% salary rule", 'Risk control']
+})
+st.dataframe(signals, use_container_width=True)
+
+# RISK METRICS
+col_r1, col_r2, col_r3 = st.columns(3)
+col_r1.metric("📊 **Expected Return**", f"{12 + risk_score/10:.1f}% p.a.")
+col_r2.metric("📉 **Max Drawdown**", f"{15 + risk_score/2:.0f}%")
+col_r3.metric("⏱️ **Recommended Horizon**", f"{3 if risk_score<50 else 5 if risk_score<70 else 7}+ years")
+
+# DOWNLOAD
+csv = df.to_csv(index=False) if 'portfolio' in st.session_state else ""
+st.download_button("📥 **Download My NSE Portfolio**", csv, "my-nse-portfolio.csv")
+
+st.markdown("---")
+st.markdown("*🧠 AI Advisor for Bavani | Data Science Student | NSE-focused*")
