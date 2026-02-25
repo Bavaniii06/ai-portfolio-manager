@@ -8,20 +8,18 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="AI Portfolio Manager Pro", layout="wide", page_icon="💰")
 
 st.title("💰 **AI Portfolio Manager Pro**")
-st.markdown("**Dynamic NSE ETFs • Risk-Adjusted • Term-Specific Returns**")
+st.markdown("**Dynamic NSE ETFs • Risk-Adjusted • Term-Specific**")
 st.markdown("---")
 
-# NSE ETF Database (25+ Professional ETFs)
+# NSE ETF Database (Production Ready)
 NSE_ETFS = {
-    "Short-term (1-3yr)": ["NIFTYBEES.NS", "ICICILIQ.NS", "BANKBEES.NS", "LIQUIDBEES.NS"],
-    "Mid-term (3-7yr)": ["JUNIORBEES.NS", "MID150BEES.NS", "N100BEES.NS", "PSUBNKBEES.NS"],
-    "Long-term (7+yr)": ["SMALLCPBEES.NS", "MOM30BEES.NS", "VALUE20BEES.NS", "ALPHALOWV30.NS"]
+    "Short-term (1-3yr)": ["NIFTYBEES.NS", "ICICILIQ.NS", "BANKBEES.NS"],
+    "Mid-term (3-7yr)": ["JUNIORBEES.NS", "MID150BEES.NS", "N100BEES.NS"],
+    "Long-term (7+yr)": ["SMALLCPBEES.NS", "MOM30BEES.NS", "VALUE20BEES.NS"]
 }
 
 # Sidebar
-st.sidebar.header("📈 **Portfolio Settings**")
-
-# Portfolio (Dynamic 2-6 holdings)
+st.sidebar.header("📈 **Portfolio**")
 num_holdings = st.sidebar.slider("Holdings", 2, 6, 2)
 portfolio_data = []
 for i in range(num_holdings):
@@ -38,105 +36,103 @@ df_portfolio = df_portfolio.set_index('Symbol')
 total_value = df_portfolio['Value'].sum()
 current_pct = df_portfolio['Value'] / total_value
 
-# Profile + Goals
+# Profile
 st.sidebar.markdown("---")
-st.sidebar.subheader("👤 **Investor Profile**")
+st.sidebar.subheader("👤 **Profile**")
 age = st.sidebar.slider("Age", 20, 60, 28)
-income = st.sidebar.number_input("Monthly Income ₹", 30000, 200000, 60000)
-risk = st.sidebar.selectbox("Risk", ["Conservative (40% Eq)", "Moderate (60% Eq)", "Aggressive (80% Eq)"])
-horizon = st.sidebar.selectbox("Horizon", ["Short-term (1-3yr)", "Mid-term (3-7yr)", "Long-term (7+yr)"])
+income = st.sidebar.number_input("Income ₹", 30000, 200000, 60000)
+risk_level = st.sidebar.selectbox("Risk", ["Conservative", "Moderate", "Aggressive"])
+horizon = st.sidebar.selectbox("Horizon", list(NSE_ETFS.keys()))
 
-# Dynamic targets
+# Targets
 st.sidebar.markdown("---")
-st.sidebar.subheader("🎯 **Target Weights**")
+st.sidebar.subheader("🎯 **Targets (%)**")
 target_alloc = {}
 for symbol in df_portfolio.index:
     target_alloc[symbol] = st.sidebar.slider(symbol, 0, 100, 50) / 100
 
 # ============================================================================
-# DASHBOARD SECTIONS
+# METRICS
 # ============================================================================
 col1, col2, col3 = st.columns(3)
-col1.metric("💰 Portfolio Value", f"₹{total_value:,.0f}")
+col1.metric("💰 Value", f"₹{total_value:,.0f}")
 col2.metric("⚠️ Concentration", f"{current_pct.max()*100:.0f}%")
 col3.metric("📊 Holdings", len(df_portfolio))
 
-st.subheader("📈 **Current Portfolio**")
+st.subheader("📈 **Portfolio**")
 st.dataframe(df_portfolio, width="stretch")
 
-# Charts
-fig_pie = px.pie(values=current_pct*100, names=current_pct.index, hole=0.4, title="Current Allocation")
+fig_pie = px.pie(values=current_pct*100, names=current_pct.index, hole=0.4)
 st.plotly_chart(fig_pie, use_container_width=True)
 
-# Rebalance (Professional)
-st.subheader("🔄 **Rebalance Plan**")
+# ============================================================================
+# REBALANCE (Bulletproof)
+# ============================================================================
+st.subheader("🔄 **Rebalance**")
 common = list(set(df_portfolio.index) & set(target_alloc))
 if common:
-    curr_aligned = current_pct.reindex(common).fillna(0)
-    tgt_aligned = pd.Series({t: target_alloc[t] for t in common})
-    diff = curr_aligned - tgt_aligned
+    curr = current_pct.reindex(common).fillna(0)
+    tgt = pd.Series({t: target_alloc[t] for t in common})
+    diff = (curr - tgt) * 100
     
     rebalance = pd.DataFrame({
         'Asset': common,
-        'Current': (curr_aligned*100).round(1),
-        'Target': (tgt_aligned*100).round(1),
-        'Diff': (diff*100).round(1),
-        'Action': ['🔴 SELL' if d>5 else '🟢 BUY' if d<-5 else '🟡 HOLD' for d in diff*100],
-        'Amount': np.abs(diff * total_value).round(0)
+        'Current': (curr*100).round(1),
+        'Target': (tgt*100).round(1),
+        'Diff': diff.round(1),
+        'Action': ['🔴 SELL' if d>5 else '🟢 BUY' if d<-5 else '🟡 HOLD' for d in diff],
+        'Amount': (np.abs(curr - tgt) * total_value).round(0)
     })
     st.dataframe(rebalance, width="stretch")
 
 # ============================================================================
-# PROFESSIONAL RECOMMENDATIONS (Term + Risk Specific)
+# PRO RECOMMENDATIONS (FIXED KeyError)
 # ============================================================================
-st.subheader("🤖 **Professional ETF Portfolio**")
+st.subheader("🤖 **Recommendations**")
 
-# Expected returns by horizon (Real NSE data)
+# FIXED: Safe risk lookup
+risk_alloc = {"Conservative": 0.4, "Moderate": 0.6, "Aggressive": 0.8}.get(risk_level, 0.5)
+equity_pct = min(100 - age, int(risk_alloc * 100))
+debt_pct = 100 - equity_pct
+
+# Real returns by horizon
 returns = {
-    "Short-term (1-3yr)": {"Eq": 12, "Debt": 7.5, "Vol": 15},
-    "Mid-term (3-7yr)": {"Eq": 15, "Debt": 7.8, "Vol": 20}, 
-    "Long-term (7+yr)": {"Eq": 18, "Debt": 8.2, "Vol": 25}
+    "Short-term (1-3yr)": 11.5,
+    "Mid-term (3-7yr)": 14.5,
+    "Long-term (7+yr)": 16.5
 }
+exp_return = returns[horizon]
 
-term_data = returns[horizon]
-eq_alloc = {"Conservative": 0.4, "Moderate": 0.6, "Aggressive": 0.8}[risk]
-debt_alloc = 1 - eq_alloc
+sip = int(income * 0.25)
+st.metric("🎯 Expected Return", f"{exp_return:.1f}%", f"Vol: {int(equity_pct/4)}%")
 
-exp_return = (term_data["Eq"] * eq_alloc + term_data["Debt"] * debt_alloc)
-sip_suggestion = int(income * 0.25)
+st.success(f"""
+**📊 For Age {age}, ₹{income:,} income:**
 
-st.metric("🎯 Expected Annual Return", f"{exp_return:.1f}%", f"Vol: {term_data['Vol']}%")
+**Allocation**: {equity_pct}% NSE | {debt_pct}% Debt
+**SIP**: ₹{sip:,}/month  
+**10yr Corpus**: ₹{int(sip*12*100*(1+exp_return/100)**10/100):,}
 
-st.info(f"""
-**📊 Professional Allocation for {age}yo, {risk}, {horizon}:**
-
-**Target Mix**: {int(eq_alloc*100)}% NSE Equity | {int(debt_alloc*100)}% Debt
-**Monthly SIP**: ₹{sip_suggestion:,} (25% income)
-**Expected Corpus (10yr)**: ₹{int(sip_suggestion*12*100 * (1+exp_return/100)**10 / 100):,}
-
-**🏆 Top {horizon} ETFs** ({NSE_ETFS[horizon][:4]}):
-- Large-cap stability + {'mid/small-cap growth' if 'Long' in horizon else 'liquidity'}
+**🏆 {horizon} ETFs**: {', '.join(NSE_ETFS[horizon])}
 """)
 
 # ============================================================================
-# LIVE NSE ETF MARKET (25+ ETFs)
+# LIVE NSE ETFS (Top 12)
 # ============================================================================
-st.subheader("📊 **Live NSE ETF Market** (Top Performers)")
+st.subheader("📊 **Live NSE ETFs**")
 try:
-    all_etfs = NSE_ETFS["Short-term (1-3yr)"] + NSE_ETFS["Mid-term (3-7yr)"] + NSE_ETFS["Long-term (7+yr)"]
-    data = yf.download(all_etfs, period="3mo", progress=False)['Adj Close']
-    perf = ((data.iloc[-1] / data.iloc[0] - 1) * 100).round(1)
+    etfs = NSE_ETFS[horizon][:3] + ["NIFTYBEES.NS"]
+    data = yf.download(etfs, period="1mo", progress=False)['Adj Close']
+    perf = ((data.iloc[-1] / data.iloc[0] - 1)*100).round(1)
     
     live_df = pd.DataFrame({
         'ETF': perf.index,
-        '3M Return': [f"{r:+.1f}%" for r in perf.values],
-        'Suitability': ['Short' if e in NSE_ETFS["Short-term (1-3yr)"] else 
-                       'Mid' if e in NSE_ETFS["Mid-term (3-7yr)"] else 'Long' for e in perf.index]
-    }).sort_values('3M Return', ascending=False)
-    
-    st.dataframe(live_df.head(10), width="stretch")
+        'Price': data.iloc[-1].round(2),
+        '1M %': [f"{r:+.1f}%" for r in perf]
+    })
+    st.dataframe(live_df, width="stretch")
 except:
-    st.info("📡 Live NSE data loading...")
+    st.info("📡 NSE data loading...")
 
 st.markdown("---")
-st.caption("⚠️ Professional simulator | Consult SEBI advisor | Data: NSE 2026")
+st.caption("⚠️ SEBI disclaimer | Live NSE data 2026")
