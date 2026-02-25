@@ -25,24 +25,22 @@ goal = col2.selectbox("🎯 Goal", ["Emergency", "Short-term", "Mid-term", "Long
 age = col3.slider("👤 Age", 22, 65, 28)
 risk = st.selectbox("⚠️ Risk", ["Low", "Medium", "High"])
 
-# CURRENT HOLDINGS - FIXED NUMBER INPUT
+# CURRENT HOLDINGS
 st.subheader("**📊 Enter Your Holdings**")
 current_holdings = []
-default_values = [12, 8, 25, 0, 0, 0]  # Safe defaults
 
 for i in range(6):
-    with st.container():
-        col_sym, col_qty, col_price = st.columns([3, 1.5, 1.5])
-        symbol = col_sym.text_input(f"Stock {i+1}", ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "", "", ""][i])
-        qty = col_qty.number_input(f"Qty {i+1}", min_value=0.0, max_value=10000.0, value=float(default_values[i]), step=1.0)
-        price = col_price.number_input(f"Price ₹{i+1}", min_value=100.0, max_value=10000.0, value=2925.0 if i==0 else 4185.0 if i==1 else 1650.0 if i==2 else 1000.0)
-        
-        if symbol and qty > 0:
-            total = qty * price
-            current_holdings.append({
-                'Symbol': symbol, 'Quantity': qty, 'Price': price, 
-                'Total_Rs': total
-            })
+    col_sym, col_qty, col_price = st.columns([3, 1.5, 1.5])
+    symbol = col_sym.text_input(f"Stock {i+1}", ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "", "", ""][i])
+    qty = col_qty.number_input(f"Qty {i+1}", min_value=0.0, max_value=10000.0, value=12.0 if i==0 else 8.0 if i==1 else 25.0 if i==2 else 0.0, step=1.0)
+    price = col_price.number_input(f"Price ₹{i+1}", min_value=100.0, max_value=10000.0, value=2925.0 if i==0 else 4185.0 if i==1 else 1650.0 if i==2 else 1000.0)
+    
+    if symbol and qty > 0:
+        total = qty * price
+        current_holdings.append({
+            'Symbol': symbol, 'Quantity': qty, 'Price': price, 
+            'Total_Rs': total
+        })
 
 # ANALYSIS
 if current_holdings:
@@ -53,23 +51,23 @@ if current_holdings:
     
     # METRICS
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("💰 Total Value", f"₹{total_value:,.0f}")
+    col1.metric("💰 Total", f"₹{total_value:,.0f}")
     col2.metric("📊 Holdings", len(df_current))
-    col3.metric("🎯 Target Equity", f"{min((65-age)*1.2, 85):.0f}%")
+    col3.metric("🎯 Equity Target", f"{min((65-age)*1.2, 85):.0f}%")
     col4.metric("⚠️ Concentration", f"{df_current['Weight'].max():.0f}%")
     
-    # CURRENT HOLDINGS TABLE
-    st.subheader("**1. Your Current Portfolio**")
+    # CURRENT PORTFOLIO
+    st.subheader("**1. Current Analysis**")
     df_current['Signal'] = np.where(df_current['PnL_%'] > 10, "🟢 STRONG HOLD",
                                    np.where(df_current['PnL_%'] > 0, "🟢 HOLD",
                                            np.where(df_current['PnL_%'] > -10, "🟡 TRIM", "🔴 SELL")))
     st.dataframe(df_current[['Symbol', 'Quantity', 'Price', 'Total_Rs', 'PnL_%', 'Signal']].round(0), use_container_width=True)
     
     # RECOMMENDATIONS
-    st.subheader(f"**2. {goal} Goal Recommendations**")
+    st.subheader(f"**2. {goal} Recommendations**")
     goal_assets = ASSETS[goal]
     
-    # Exact quantities scaled to portfolio
+    # Scale quantities to portfolio size
     portfolio_value = float(portfolio_size.replace('₹', '').replace('k', '000').replace('L', '00000'))
     base_qty = max(1, portfolio_value / 100000 / len(goal_assets))
     
@@ -86,49 +84,49 @@ if current_holdings:
     df_recommend = pd.DataFrame(rec_list)
     st.dataframe(df_recommend, use_container_width=True)
     
-    # PIE CHARTS
+    # CHARTS
     col1, col2 = st.columns(2)
     with col1:
-        fig1 = px.pie(df_current, values='Total_Rs', names='Symbol', title="**Current**", hole=0.4)
+        fig1 = px.pie(df_current, values='Total_Rs', names='Symbol', title="Current", hole=0.4)
         st.plotly_chart(fig1, use_container_width=True)
     with col2:
-        fig2 = px.pie(df_recommend, values='Total_Rs', names='Symbol', title=f"**{goal} Target**", hole=0.4)
+        fig2 = px.pie(df_recommend, values='Total_Rs', names='Symbol', title=f"{goal} Target", hole=0.4)
         st.plotly_chart(fig2, use_container_width=True)
     
     # ACTION PLAN
-    st.markdown("### **📋 Exact Buy Plan**")
+    st.markdown("### **📋 Buy Exactly These Quantities**")
     st.markdown(f"""
-**Your Profile:** Age {age} | Portfolio ₹{portfolio_size} | Goal: {goal}
+**Profile:** Age {age} | Size {portfolio_size} | Goal: {goal}
 
-**Holdings Analysis:**
+**Current Holdings:**
     """)
     
     for _, row in df_current.iterrows():
         st.markdown(f"• **{row['Signal']}** {row['Symbol']} | **{int(row['Quantity'])} qty** | **₹{row['Total_Rs']:,.0f}**")
     
     st.markdown(f"""
-**BUY These Quantities:**
+**Recommended Buys:**
     """)
     
     for _, row in df_recommend.head(4).iterrows():
         st.markdown(f"• **BUY {int(row['Buy_Qty'])} qty** {row['Symbol']} | **₹{row['Total_Rs']:,.0f}**")
     
     st.markdown(f"""
-**Portfolio Instructions:**
-• Total target: {len(df_recommend)} stocks/ETFs
-• Max single stock: {df_recommend['Weight'].max():.0f}%
-• Rebalance every 3 months
+**Portfolio Plan:**
+• Total assets: {len(df_recommend)}
+• Max weight: {df_recommend['Weight'].max():.0f}%
+• Review every 3 months
     """)
     
     # DOWNLOAD
     full_plan = pd.concat([
-        df_current.assign(Plan='Current Holdings'),
-        df_recommend.assign(Plan=f'{goal} Recommendations')
+        df_current.assign(Plan='Current'),
+        df_recommend.assign(Plan=f'{goal} Target')
     ])
     csv = full_plan.to_csv(index=False)
-    st.download_button("📥 **Download Complete Plan**", csv, "ai-portfolio-plan.csv")
+    st.download_button("📥 Download Plan", csv, "portfolio-plan.csv")
 
 else:
-    st.info("👆 **Enter your holdings above** (RELIANCE 12qty, TCS 8qty suggested)")
+    st.info("👆 Enter holdings (RELIANCE 12qty, TCS 8qty) → Get exact buy plan")
 
-st.markdown("*🤖 Professional AI Advisor |
+st.markdown("*🤖 AI Portfolio Manager | Exact Quantities | All Goals*")
