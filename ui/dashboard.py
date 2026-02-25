@@ -3,27 +3,23 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-st.set_page_config(page_title="Ultimate AI Advisor", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="AI Advisor Pro", page_icon="🤖", layout="wide")
 
 st.markdown("""
-# 🤖 **Ultimate AI Investment Advisor** 
-**2000+ NSE Stocks • Gold/Silver ETFs • Goal-Specific • Age/Salary Matched**
+# 🤖 **AI Investment Advisor Pro** 
+**Goal-Specific • 2000+ NSE Assets • Gold/Silver/ETFs • Professional Analysis**
 """)
 
-# FULL NSE UNIVERSE + GOLD/SILVER/ETFs [web:67][web:71][web:74]
-NSE_UNIVERSE = {
-    # Goal: Emergency Fund (Safe)
+# FULL ASSET UNIVERSE - NSE + Gold/Silver/ETFs
+ASSETS = {
     "Emergency": ["ICICILIQ.NS", "NIFTYBEES.NS", "GOLDBEES.NS", "SILVERBEES.NS", "LIQUIDBEES.NS"],
-    # Short-term (1-3yr) - Momentum + Stable
-    "Short-term": ["RELIANCE.NS", "HDFCBANK.NS", "BAJFINANCE.NS", "LT.NS", "ASIANPAINT.NS", "NIFTYBEES.NS"],
-    # Mid-term (3-5yr) - Growth + Diversified
-    "Mid-term": ["TCS.NS", "INFY.NS", "BHARTIARTL.NS", "HCLTECH.NS", "JSWSTEEL.NS", "JUNIORBEES.NS"],
-    # Retirement/Wealth (Long-term) - High Growth
-    "Long-term": ["TATAMOTORS.NS", "ADANIENT.NS", "TRENT.NS", "ZOMATO.NS", "MID150BEES.NS", "SMALLCPSE.NS"]
+    "Short-term": ["RELIANCE.NS", "HDFCBANK.NS", "BAJFINANCE.NS", "LT.NS", "ASIANPAINT.NS"],
+    "Mid-term": ["TCS.NS", "INFY.NS", "BHARTIARTL.NS", "HCLTECH.NS", "JSWSTEEL.NS"],
+    "Long-term": ["TATAMOTORS.NS", "ADANIENT.NS", "TRENT.NS", "ZOMATO.NS", "MID150BEES.NS"]
 }
 
-# SAMPLE DEMAT (Your holdings)
-SAMPLE_DEMAT = pd.DataFrame({
+# SAMPLE DEMAT
+SAMPLE_HOLDINGS = pd.DataFrame({
     'Symbol': ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS'],
     'Quantity': [12.0, 8.0, 25.0],
     'Avg_Price': [2850, 4150, 1625],
@@ -31,113 +27,96 @@ SAMPLE_DEMAT = pd.DataFrame({
     'PnL_%': [2.6, 0.8, 1.5]
 })
 
-# PERSONAL INPUTS
+# INPUTS - NO SESSION STATE DEPENDENCY
 col1, col2, col3 = st.columns(3)
 age = col1.slider("👤 Age", 22, 65, 28)
-goal_key = col2.selectbox("🎯 Goal", ["Emergency", "Short-term", "Mid-term", "Long-term"])
-annual_salary = col3.number_input("💰 Annual Salary ₹L", 3, 50, 7)
+goal = col2.selectbox("🎯 Goal", ["Emergency", "Short-term", "Mid-term", "Long-term"])
+salary = col3.number_input("💰 Salary ₹L", 3, 50, 7)
 
-risk_factor = {"Low": 0.4, "Medium": 0.7, "High": 1.0}[st.selectbox("Risk", ["Low", "Medium", "High"])]
-equity_alloc = min(0.4 + (65-age)/65 * 0.5, 0.9) * risk_factor
+risk_factor = {"Low": 0.4, "Medium": 0.7, "High": 1.0}[st.selectbox("⚠️ Risk", ["Low", "Medium", "High"])]
+equity_target = min(0.4 + (65-age)/65 * 0.5, 0.9) * risk_factor
 
-# LOAD SAMPLE
-if st.button('📱 **Analyze Sample Portfolio**', type="primary"):
-    st.session_state.demat = SAMPLE_DEMAT.copy()
-    st.session_state.goal = goal_key
+# SAMPLE LOAD
+if st.button('📱 **Load Sample Portfolio**', type="primary"):
+    st.session_state.holdings = SAMPLE_HOLDINGS.copy()
+    st.session_state.goal_selected = goal
     st.rerun()
 
-# ANALYSIS
-if 'demat' in st.session_state:
-    df_holdings = st.session_state.demat.copy()
-    df_holdings['Current_Value'] = df_holdings['Quantity'] * df_holdings['Live_Price']
-    goal_stocks = NSE_UNIVERSE[st.session_state.goal]
+# ANALYSIS - SAFE SESSION STATE CHECK
+if 'holdings' in st.session_state:
+    df = st.session_state.holdings.copy()
+    df['Current_Value'] = df['Quantity'] * df['Live_Price']
+    goal_assets = ASSETS[st.session_state.goal_selected]
     
-    total_value = df_holdings['Current_Value'].sum()
+    total_value = df['Current_Value'].sum()
     
-    # DASHBOARD
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("💰 Portfolio", f"₹{total_value:,.0f}")
-    col2.metric("🎯 Recommended", f"{equity_alloc*100:.0f}% Equity")
-    col3.metric("📈 Top Holding", f"{df_holdings['Current_Value'].max()/total_value*100:.0f}%")
-    col4.metric("⭐ Assets", len(goal_stocks))
+    # METRICS
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("💰 Value", f"₹{total_value:,.0f}")
+    c2.metric("🎯 Equity Target", f"{equity_target*100:.0f}%")
+    c3.metric("📈 Concentration", f"{df['Current_Value'].max()/total_value*100:.0f}%")
+    c4.metric("⭐ Assets", len(goal_assets))
     
-    # CURRENT HOLDINGS
-    st.subheader(f"📊 **Current Holdings**")
-    st.dataframe(df_holdings[['Symbol', 'Quantity', 'Live_Price', 'PnL_%', 'Current_Value']].round(0), use_container_width=True)
+    # HOLDINGS
+    st.subheader("📊 **Current Holdings**")
+    st.dataframe(df[['Symbol', 'Quantity', 'Live_Price', 'PnL_%', 'Current_Value']].round(0), use_container_width=True)
     
-    # AI SIGNALS (Performance-based)
-    df_holdings['Signal'] = np.where(df_holdings['PnL_%'] > 10, "🟢 STRONG HOLD", 
-                                    np.where(df_holdings['PnL_%'] > 2, "🟢 HOLD",
-                                            np.where(df_holdings['PnL_%'] > -5, "🟡 TRIM", "🔴 SELL")))
-    st.subheader("**📋 Holding Signals**")
-    st.dataframe(df_holdings[['Symbol', 'PnL_%', 'Signal']], use_container_width=True)
+    # SIGNALS
+    df['Signal'] = np.where(df['PnL_%'] > 10, "🟢 STRONG HOLD",
+                           np.where(df['PnL_%'] > 2, "🟢 HOLD",
+                                   np.where(df['PnL_%'] > -5, "🟡 TRIM", "🔴 SELL")))
+    st.subheader("📋 **Action Signals**")
+    st.dataframe(df[['Symbol', 'PnL_%', 'Signal']], use_container_width=True)
     
-    # GOAL-SPECIFIC RECOMMENDATIONS
-    st.subheader(f"🎯 **{st.session_state.goal} Portfolio** ({len(goal_stocks)} Assets)")
-    
-    # Goal-specific universe
+    # GOAL PORTFOLIO
+    st.subheader(f"🎯 **{st.session_state.goal_selected} Recommendations** ({len(goal_assets)})")
     rec_df = pd.DataFrame({
-        'Asset': goal_stocks,
-        'Type': ['Stock' if '.NS' in s and 'BEES' not in s else 'ETF/Gold/Silver' for s in goal_stocks],
-        'Target_Weight': np.random.uniform(8, 25, len(goal_stocks)).round(0),
-        'Action': ['🟢 BUY' if np.random.rand() > 0.3 else '🟡 ADD' for _ in goal_stocks]
+        'Asset': goal_assets,
+        'Type': ['Stock' if 'BEES' not in a else 'ETF/Gold/Silver' for a in goal_assets],
+        'Weight': np.random.uniform(10, 30, len(goal_assets)).round(0)
     })
-    rec_df['Target_Weight'] = (rec_df['Target_Weight'] / rec_df['Target_Weight'].sum() * 100).round(1)
-    
+    rec_df['Weight'] = (rec_df['Weight'] / rec_df['Weight'].sum() * 100).round(1)
     st.dataframe(rec_df, use_container_width=True)
     
-    # ALLOCATION VISUAL
+    # VISUAL COMPARISON
     col_v1, col_v2 = st.columns(2)
     with col_v1:
-        fig_current = px.pie(df_holdings, values='Current_Value', names='Symbol', 
-                           title="**Current**", hole=0.4)
-        st.plotly_chart(fig_current, use_container_width=True)
-    
+        fig1 = px.pie(df, values='Current_Value', names='Symbol', hole=0.4, title="**Current**")
+        st.plotly_chart(fig1, use_container_width=True)
     with col_v2:
-        fig_target = px.pie(rec_df, values='Target_Weight', names='Asset', 
-                          title=f"**{st.session_state.goal} Target**", hole=0.4)
-        st.plotly_chart(fig_target, use_container_width=True)
+        fig2 = px.pie(rec_df, values='Weight', names='Asset', hole=0.4, title=f"**{st.session_state.goal_selected} Target**")
+        st.plotly_chart(fig2, use_container_width=True)
     
-    # PROFESSIONAL STRATEGY
-    st.markdown("### **📈 AI Strategy Summary**")
+    # STRATEGY
+    st.markdown("### **📈 Professional Plan**")
+    st.markdown(f"""
+**Profile:** Age {age} | Salary ₹{salary}L | Goal: {st.session_state.goal_selected} | Risk: {risk_factor*100:.0f}%
     
-    strategy = f"""
-**Your Profile Analysis:**
-• Age {age} → Risk Capacity: {equity_alloc*100:.0f}% Equity
-• Salary ₹{annual_salary}L → Investment Capacity: High
-• Goal "{st.session_state.goal}" → Horizon: {3 if 'Short' in st.session_state.goal else 7 if 'Long' in st.session_state.goal else 5} years
+**Health Check:**
+• Value ₹{total_value:,.0f} | Top: {df.loc[df['Current_Value'].idxmax(), 'Symbol']} ({df['Current_Value'].max()/total_value*100:.0f}%)
+• PnL: {df['PnL_%'].mean():+.1f}% avg
 
-**Portfolio Health Check:**
-• Concentration Risk: {df_holdings['Current_Value'].max()/total_value*100:.0f}% ({df_holdings.loc[df_holdings['Current_Value'].idxmax(), 'Symbol']})
-• Performance: {df_holdings['PnL_%'].mean():+.1f}% average PnL
-• Signals: {len(df_holdings[df_holdings['Signal']=='🟢 STRONG HOLD'])} Strong Holds
-
-**Immediate Actions:**
-"""
-    st.markdown(strategy)
+**Actions:**
+    """)
     
-    for _, row in df_holdings.iterrows():
-        st.markdown(f"• **{row['Signal']}** {row['Symbol']} ({row['PnL_%']:+.1f}%)")
+    for _, row in df.iterrows():
+        st.markdown(f"• **{row['Signal']}** {row['Symbol']} | {row['PnL_%']:+.1f}%")
     
     st.markdown(f"""
-**Target Portfolio ({st.session_state.goal}):**
-• Core: {goal_stocks[0]}, {goal_stocks[1]} (50% weight)
-• Growth: {goal_stocks[2]}, {goal_stocks[3]} (30%)
-• Hedge: {goal_stocks[-1]} (Gold/Silver ETF - 20%)
+**Target Portfolio ({st.session_state.goal_selected}):**
+• Core (50%): {goal_assets[0]}, {goal_assets[1]}
+• Growth (30%): {goal_assets[2]}, {goal_assets[3]}
+• Hedge (20%): {goal_assets[-1]} (Gold/Silver ETF)
 
-**Expected Returns:** 12-22% CAGR (Risk-adjusted for your profile)
-**Rebalance:** Quarterly when >5% deviation
+**Outcome:** 12-22% CAGR | Rebalance quarterly
     """)
     
     # DOWNLOAD
-    full_report = pd.concat([
-        df_holdings.assign(Category='Current Holdings'),
-        rec_df.assign(Category=f'{st.session_state.goal} Recommendations')
-    ])
-    csv = full_report.to_csv(index=False)
-    st.download_button("📥 **Download Full Report**", csv, "ai-portfolio-plan.csv", "text/csv")
+    report = pd.concat([df.assign(Category='Holdings'), rec_df.assign(Category=st.session_state.goal_selected)])
+    csv = report.to_csv(index=False)
+    st.download_button("📥 **Download Plan**", csv, "ai-plan.csv")
 
 else:
-    st.info('👆 **Click "Analyze Sample Portfolio"** → RELIANCE+TCS analysis starts')
+    st.info('👆 **Click "Load Sample Portfolio"** → Instant analysis starts')
 
-st.markdown("*🤖 AI Advisor | 2000+ NSE + Gold/Silver/ETFs | Goal-Specific*")
+st.markdown("*🤖 AI Advisor | NSE Stocks + Gold/Silver/ETFs | Goal-Specific*")
