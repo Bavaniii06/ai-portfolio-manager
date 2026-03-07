@@ -758,10 +758,11 @@ with tab4:
         rng = random.Random(reactive_seed)
 
         if active_universe is not None:
-            # 1. Stability (Large Cap)
+            # 1. Stability (Mutual Funds) - Large Cap Funds/ETFs ONLY
             l_cap_pool = active_universe[
-                ((active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
+                ((active_universe['Sector'].str.contains("ETF", case=False, na=False)) |
                  (active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
+                (~active_universe['Name'].str.contains("GOLD|SILVER|Commodity", case=False, na=False)) & # No commodities here
                 (active_universe['Name'].str.contains("50|Sensex|Bluechip", case=False, na=False)) &
                 (active_universe['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
@@ -772,10 +773,11 @@ with tab4:
                     r = l_cap_pool.loc[idx]
                     themed_grid["Stability (Mutual Funds)"].append({"name": r['Name'], "raw": r['Name']})
 
-            # 2. Growth (Mid/Small)
+            # 2. Growth (Mutual Funds) - Mid/Small Cap Funds ONLY
             g_mf_pool = active_universe[
-                ((active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
+                ((active_universe['Sector'].str.contains("ETF", case=False, na=False)) |
                  (active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
+                (~active_universe['Name'].str.contains("GOLD|SILVER|Commodity", case=False, na=False)) & # No commodities here
                 (active_universe['Name'].str.contains("Midcap|Smallcap|Next 50", case=False, na=False)) &
                 (active_universe['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
@@ -810,24 +812,26 @@ with tab4:
                     r = comm_pool.loc[idx]
                     themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Name']})
 
-        # --- UNIVERSAL FALLBACK (Ensure all 4 rows are filled) ---
+        # --- UNIVERSAL FALLBACK (Strict Asset Separation) ---
         fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
         
         if not themed_grid["Stability (Mutual Funds)"]:
-             stab_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["50", "Sensex", "ETF"])]
-             if not stab_fall: stab_fall = fallback_universe
+             # Strictly Funds/ETFs (Exclude Stocks/Commodities)
+             stab_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BeES" in str(s.get('symbol',''))) and "GOLD" not in str(s.get('symbol','')) and "SILVER" not in str(s.get('symbol',''))]
+             if not stab_fall: stab_fall = [s for s in fallback_universe if "ETF" in str(s.get('name',''))]
              for s in rng.sample(stab_fall, min(len(stab_fall), 3)): 
                  themed_grid["Stability (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
         
         if not themed_grid["Growth (Mutual Funds)"]:
-             grow_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["Smallcap", "Midcap", "Next 50"])]
-             if not grow_fall: grow_fall = fallback_universe
+             # Strictly Alpha/Midcap Funds
+             grow_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BeES" in str(s.get('symbol',''))) and "Smallcap" in str(s.get('name',''))]
+             if not grow_fall: grow_fall = [s for s in fallback_universe if "ETF" in str(s.get('name',''))]
              for s in rng.sample(grow_fall, min(len(grow_fall), 3)): 
                  themed_grid["Growth (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
              
         if not themed_grid["Elite Alpha"]:
-             alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name', ''))]
-             if not alpha_fall: alpha_fall = fallback_universe
+             # Strictly Stocks (Exclude ETFs/Funds/Commodities)
+             alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol','')) and "GOLD" not in str(s.get('symbol',''))]
              for s in rng.sample(alpha_fall, min(len(alpha_fall), 3)): 
                  themed_grid["Elite Alpha"].append({"name": s['name'], "raw": s['symbol']})
 
