@@ -679,7 +679,7 @@ with tab3:
         st.error(f"Data unavailable for {calc_sym}.")
 
 with tab4:
-    st.markdown('<div class="section-header">Elite Multi-Asset SIP Planner</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Elite Mutual Fund & ETF SIP Planner</div>', unsafe_allow_html=True)
     
     with st.expander("💡 Understanding SIP: Mutual Funds vs ETFs", expanded=False):
         st.write("""
@@ -738,7 +738,8 @@ with tab4:
         def clean_elite_name(raw_name):
             clean = raw_name.replace(".NS", "").replace(".BO", "")
             # Only strip the most technical noise, keep descriptive branding for card-feel
-            replacements = [" ETF", "ETF", " Mutual Fund", "Mutual Fund", " MUTUAL FUND"]
+            # Only strip technical noise, keep professional "Mutual Fund" branding
+            replacements = [" ETF", "ETF", ".NS", ".BO"]
             for r in replacements:
                 clean = clean.replace(r, "")
             # Cleanup common technical names for commodities
@@ -746,7 +747,7 @@ with tab4:
             if "SILVER" in clean.upper(): clean = "Silver"
             return clean.strip()
 
-        themed_grid = {"Stability": [], "Growth": [], "Elite Alpha": [], "Commodities & Defense": []}
+        themed_grid = {"Stability (Mutual Funds)": [], "Growth (Mutual Funds)": [], "Elite Alpha": [], "Commodities & Defense": []}
         import random
         rng = random.Random(reactive_seed)
 
@@ -763,7 +764,7 @@ with tab4:
                 candidates = l_cap_pool.head(6).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = l_cap_pool.loc[idx]
-                    themed_grid["Stability"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Stability (Mutual Funds)"].append({"name": r['Name'], "raw": r['Name']})
 
             # 2. Growth (Mid/Small)
             g_mf_pool = active_universe[
@@ -777,7 +778,7 @@ with tab4:
                 candidates = g_mf_pool.head(6).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = g_mf_pool.loc[idx]
-                    themed_grid["Growth"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Growth (Mutual Funds)"].append({"name": r['Name'], "raw": r['Name']})
 
             # 3. Elite Alpha (Stocks)
             stock_pool = active_universe[
@@ -806,17 +807,17 @@ with tab4:
         # --- UNIVERSAL FALLBACK (Ensure all 4 rows are filled) ---
         fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
         
-        if not themed_grid["Stability"]:
+        if not themed_grid["Stability (Mutual Funds)"]:
              stab_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["50", "Sensex", "ETF"])]
              if not stab_fall: stab_fall = fallback_universe
              for s in rng.sample(stab_fall, min(len(stab_fall), 3)): 
-                 themed_grid["Stability"].append({"name": s['name'], "raw": s['symbol']})
+                 themed_grid["Stability (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
         
-        if not themed_grid["Growth"]:
+        if not themed_grid["Growth (Mutual Funds)"]:
              grow_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["Smallcap", "Midcap", "Next 50"])]
              if not grow_fall: grow_fall = fallback_universe
              for s in rng.sample(grow_fall, min(len(grow_fall), 3)): 
-                 themed_grid["Growth"].append({"name": s['name'], "raw": s['symbol']})
+                 themed_grid["Growth (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
              
         if not themed_grid["Elite Alpha"]:
              alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name', ''))]
@@ -868,7 +869,7 @@ with tab4:
         
         if discover_mode == "AI Suggestions":
             if 'sip_search_key' not in st.session_state:
-                 st.session_state.sip_search_key = themed_grid["Stability"][0]['raw']
+                 st.session_state.sip_search_key = themed_grid["Stability (Mutual Funds)"][0]['raw']
 
             all_options = sorted(db_results['Name'].unique().tolist()) if db_results is not None else ["Nifty 50 ETF"]
             # Phase 35: Professional selectbox mapping (Clean Label -> Raw Symbol)
