@@ -727,17 +727,13 @@ with tab4:
         # Phase 33: Reactive Seed for Intelligent Sampling
         reactive_seed = int(age) + int(s_amt_final) + int(s_yrs_final) + st.session_state.sip_shuffle_seed
 
-        # Elite Name Cleaner Utility
+        # Elite Name Cleaner Utility (Restored to Perfect State)
         def clean_elite_name(raw_name):
             clean = raw_name.replace(".NS", "").replace(".BO", "")
-            replacements = [" ETF", "ETF", " BEES", "BEES", " Mutual Fund", "Mutual Fund", " MUTUAL FUND"]
+            # Only strip the most technical noise, keep descriptive branding for card-feel
+            replacements = [" ETF", "ETF", " Mutual Fund", "Mutual Fund", " MUTUAL FUND"]
             for r in replacements:
                 clean = clean.replace(r, "")
-            # Phase 35: De-Duplicate AMC Prefixes (e.g. "Nippon India - Nippon India")
-            if " - " in clean:
-                parts = [p.strip() for p in clean.split(" - ")]
-                if len(parts) > 1 and parts[0] == parts[1]:
-                    clean = " - ".join(parts[1:])
             # Cleanup common technical names for commodities
             if "GOLD" in clean.upper(): clean = "Gold"
             if "SILVER" in clean.upper(): clean = "Silver"
@@ -751,12 +747,11 @@ with tab4:
             import random
             rng = random.Random(reactive_seed)
 
-            # 1. Stability (Large Cap)
+            # 1. Stability (Large Cap) - Restored Variety
             l_cap_pool = db_results[
                 ((db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
                  (db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
                 (db_results['Name'].str.contains("50|Sensex|Bluechip", case=False, na=False)) &
-                (~db_results['Name'].str.contains("Midcap|Smallcap|Next 50", case=False, na=False)) & # Phase 35: Tighten Stability
                 (db_results['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
             
