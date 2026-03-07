@@ -225,6 +225,7 @@ def resolve_ticker(query):
          "GOLD": "GOLDBEES.NS",
          "SILVER": "SILVERBEES.NS",
          "NIFTY": "NIFTYBEES.NS",
+         "NIFTY 50": "NIFTYBEES.NS",
          "NIFTY50": "NIFTYBEES.NS",
          "BANKNIFTY": "BANKBEES.NS",
          "IT": "ITBEES.NS",
