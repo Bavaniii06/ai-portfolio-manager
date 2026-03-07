@@ -734,17 +734,23 @@ with tab4:
         # Phase 33: Reactive Seed for Intelligent Sampling
         reactive_seed = int(age) + int(s_amt_final) + int(s_yrs_final) + st.session_state.sip_shuffle_seed
 
-        # Elite Name Cleaner Utility (Restored to Perfect State)
+        # Elite Name Cleaner Utility (Hardened for Perfection)
         def clean_elite_name(raw_name):
             clean = raw_name.replace(".NS", "").replace(".BO", "")
-            # Only strip the most technical noise, keep descriptive branding for card-feel
-            # Only strip technical noise, keep professional "Mutual Fund" branding
-            replacements = [" ETF", "ETF", ".NS", ".BO"]
+            # Phase 42: Preserve branding but remove technical noise
+            replacements = [" ETF", "ETF", " - Nippon India", " - SBI", " - HDFC"]
             for r in replacements:
                 clean = clean.replace(r, "")
-            # Cleanup common technical names for commodities
-            if "GOLD" in clean.upper(): clean = "Gold"
-            if "SILVER" in clean.upper(): clean = "Silver"
+            
+            # Smart Commodity Branding (Prevent "Gold, Gold, Gold")
+            if "GOLD" in clean.upper() and len(clean) < 10:
+                if "Nippon" in raw_name: clean = "Nippon Gold"
+                elif "SBI" in raw_name: clean = "SBI Gold"
+                elif "ICICI" in raw_name: clean = "ICICI Gold"
+                else: clean = "Gold Asset"
+            elif "SILVER" in clean.upper() and len(clean) < 10:
+                 clean = "Silver Asset"
+            
             return clean.strip()
 
         themed_grid = {"Stability (Mutual Funds)": [], "Growth (Mutual Funds)": [], "Elite Alpha": [], "Commodities & Defense": []}
@@ -827,9 +833,9 @@ with tab4:
 
         if not themed_grid["Commodities & Defense"]:
              themed_grid["Commodities & Defense"] = [
-                 {"name": "Nippon India Gold", "raw": "GOLDBEES.NS"}, 
-                 {"name": "SBI Gold", "raw": "SETFGOLD.NS"},
-                 {"name": "Nippon India Silver", "raw": "SILVERBEES.NS"}
+                 {"name": "Nippon Gold Fund", "raw": "GOLDBEES.NS"}, 
+                 {"name": "SBI Gold Fund", "raw": "SETFGOLD.NS"},
+                 {"name": "Nippon Silver Fund", "raw": "SILVERBEES.NS"}
              ]
 
         # UI Header with Shuffle (Matched to Screenshot)
