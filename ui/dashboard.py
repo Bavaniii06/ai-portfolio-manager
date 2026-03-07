@@ -733,6 +733,11 @@ with tab4:
             replacements = [" ETF", "ETF", " BEES", "BEES", " Mutual Fund", "Mutual Fund", " MUTUAL FUND"]
             for r in replacements:
                 clean = clean.replace(r, "")
+            # Phase 35: De-Duplicate AMC Prefixes (e.g. "Nippon India - Nippon India")
+            if " - " in clean:
+                parts = [p.strip() for p in clean.split(" - ")]
+                if len(parts) > 1 and parts[0] == parts[1]:
+                    clean = " - ".join(parts[1:])
             # Cleanup common technical names for commodities
             if "GOLD" in clean.upper(): clean = "Gold"
             if "SILVER" in clean.upper(): clean = "Silver"
@@ -751,6 +756,7 @@ with tab4:
                 ((db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
                  (db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
                 (db_results['Name'].str.contains("50|Sensex|Bluechip", case=False, na=False)) &
+                (~db_results['Name'].str.contains("Midcap|Smallcap|Next 50", case=False, na=False)) & # Phase 35: Tighten Stability
                 (db_results['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
             
@@ -835,12 +841,20 @@ with tab4:
                  st.session_state.sip_search_key = themed_grid["Stability"][0]['raw']
 
             all_options = sorted(db_results['Name'].unique().tolist()) if db_results is not None else ["Nifty 50 ETF"]
+            # Phase 35: Professional selectbox mapping (Clean Label -> Raw Symbol)
+            clean_to_raw = {clean_elite_name(opt): opt for opt in all_options}
+            clean_options = list(clean_to_raw.keys())
+            
             try:
-                 def_idx = all_options.index(st.session_state.sip_search_key)
-            except ValueError:
+                 # Search for the CURRENT key in clean names
+                 current_raw = st.session_state.sip_search_key
+                 current_clean = clean_elite_name(current_raw)
+                 def_idx = clean_options.index(current_clean) if current_clean in clean_options else 0
+            except:
                  def_idx = 0
 
-            s_asset = st.selectbox("🎯 Selected Target Asset", options=all_options, index=def_idx)
+            s_asset_clean = st.selectbox("🎯 Selected Target Asset", options=clean_options, index=def_idx)
+            s_asset = clean_to_raw.get(s_asset_clean, s_asset_clean)
             s_sym = resolve_ticker(s_asset)
         else:
             st.markdown("#### 🔍 Full Market Search")
