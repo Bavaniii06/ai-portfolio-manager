@@ -227,6 +227,7 @@ def resolve_ticker(query):
          "NIFTY": "NIFTYBEES.NS",
          "NIFTY 50": "NIFTYBEES.NS",
          "NIFTY50": "NIFTYBEES.NS",
+         "NIFTY 50 ETF": "NIFTYBEES.NS",
          "BANKNIFTY": "BANKBEES.NS",
          "IT": "ITBEES.NS",
          "TATA": "TATAMOTORS.NS",
@@ -253,19 +254,16 @@ import random
 # ------------------------------------------------------------------------------
 # DYNAMIC RECOMMENDATION ENGINE (Offline DB + Hardcoded Fallback)
 # ------------------------------------------------------------------------------
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=60) # Reduced TTL for better refresh reactivity
 def load_recommendations(horizon_str):
     db_path = "backend/screener_db.csv"
     if os.path.exists(db_path):
         try:
             df = pd.read_csv(db_path)
-            # Map Horizon string to Risk filters inside the DB
-            # We use the hardcoded pool logic for categories but expanded by the DB
-            # Filter by horizon logic (Backend engine categorizes by Risk, we still need to map to Horizon)
-            # For this version, we will trust the DB's Risk categorization and sample from the full DB
-            return df
-        except Exception:
-            pass
+            if not df.empty:
+                return df
+        except Exception as e:
+            st.warning(f"⚠️ Data Engine Sync: {str(e)}")
     return None
 
 # Fallback/Seed Universe for immediate use
@@ -811,11 +809,10 @@ with tab4:
             themed_grid["Commodities & Defense"] = [{"name": "Gold", "raw": "GOLDBEES.NS"}, {"name": "Silver", "raw": "SILVERBEES.NS"}]
 
         # UI Header with Shuffle (Matched to Screenshot)
-        h_col1, h_col2 = st.columns([1.5, 1])
-        with h_col1:
-            st.markdown("### 🌌 Multi-Asset Discovery Hub")
+        h_col1, h_col2 = st.columns([1.8, 1])
+        h_col1.markdown("### 🌌 Multi-Asset Discovery Hub")
         with h_col2:
-            st.markdown('<div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; background: white;">', unsafe_allow_html=True)
+            st.markdown('<div style="margin-top: -10px;">', unsafe_allow_html=True) # Adjust up to align
             if st.button("🔄 Shuffle Portfolio", key="sip_shuf_btn", use_container_width=True):
                 st.session_state.sip_shuffle_seed += 1
                 st.rerun()
