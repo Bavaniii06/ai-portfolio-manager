@@ -810,25 +810,39 @@ with tab4:
         if not themed_grid["Commodities & Defense"]:
             themed_grid["Commodities & Defense"] = [{"name": "Gold", "raw": "GOLDBEES.NS"}, {"name": "Silver", "raw": "SILVERBEES.NS"}]
 
-        # UI Header with Shuffle
-        sh_col1, sh_col2 = st.columns([2, 1])
-        sh_col1.markdown(f"#### 🌌 Multi-Asset Discovery Hub")
-        if sh_col2.button("🔄 Shuffle Portfolio", key="shuffle_btn"):
-            st.session_state.sip_shuffle_seed += 1
-            st.rerun()
+        # UI Header with Shuffle (Matched to Screenshot)
+        h_col1, h_col2 = st.columns([1.5, 1])
+        with h_col1:
+            st.markdown("### 🌌 Multi-Asset Discovery Hub")
+        with h_col2:
+            st.markdown('<div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; background: white;">', unsafe_allow_html=True)
+            if st.button("🔄 Shuffle Portfolio", key="sip_shuf_btn", use_container_width=True):
+                st.session_state.sip_shuffle_seed += 1
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        # Theme-Based Grid Rendering
         for theme, assets in themed_grid.items():
-            if assets:
+            if assets and theme != "Commodities & Defense": # Row by row as per screenshot
                 st.markdown(f"**{theme}**")
                 cols = st.columns(3) 
                 for i, asset in enumerate(assets):
                     if i < len(cols):
                         clean_name = clean_elite_name(asset['name'])
-                        # Phase 32: Ensure unique keys by including theme in the ID
+                        # Fixed height for card-feel if possible or just bold multi-line
                         if cols[i].button(f"**{clean_name}**", use_container_width=True, key=f"hub_{theme}_{asset['name']}"):
                             st.session_state.sip_search_key = asset['raw']
                             st.rerun()
+
+        # Separated Commodities at the end for clean layout 
+        if themed_grid["Commodities & Defense"]:
+            st.markdown("**Commodities & Defense**")
+            c_cols = st.columns(3)
+            for i, asset in enumerate(themed_grid["Commodities & Defense"]):
+                if i < 3:
+                    clean_name = clean_elite_name(asset['name'])
+                    if c_cols[i].button(f"**{clean_name}**", use_container_width=True, key=f"hub_comm_{asset['name']}"):
+                        st.session_state.sip_search_key = asset['raw']
+                        st.rerun()
 
         discover_mode = st.radio("Asset Discovery Mode", ["AI Suggestions", "Search All / Custom"], horizontal=True, label_visibility="collapsed")
         
