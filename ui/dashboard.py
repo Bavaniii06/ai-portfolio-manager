@@ -720,7 +720,15 @@ with tab4:
         if s_yrs_final <= 1: local_allowed_risks = ["Very Low", "Low"]
         elif s_yrs_final <= 3: local_allowed_risks = ["Low", "Medium"]
 
-        asset_count = len(db_results) if db_results is not None else 0
+        # Data Logic for Discovery Hub
+        active_universe = db_results if db_results is not None and not db_results.empty else None
+        
+        # Calculate asset count for display
+        if active_universe is not None:
+             asset_count = len(active_universe)
+        else:
+             asset_count = sum(len(v) for v in NSE_RECOMMENDATIONS.values())
+             
         st.caption(f"🧠 AI Brain actively monitoring {asset_count}+ assets | Risk Tier: {local_risk_tier}")
 
         # Phase 33: Reactive Seed for Intelligent Sampling
@@ -739,74 +747,89 @@ with tab4:
             return clean.strip()
 
         themed_grid = {"Stability": [], "Growth": [], "Elite Alpha": [], "Commodities & Defense": []}
-        
-        if db_results is not None and not db_results.empty:
-            # Phase 33: Intelligent Reactive Sampling
-            # Use reactive_seed to ensure diversity across slider changes
-            import random
-            rng = random.Random(reactive_seed)
+        import random
+        rng = random.Random(reactive_seed)
 
-            # 1. Stability (Large Cap) - Restored Variety
-            l_cap_pool = db_results[
-                ((db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
-                 (db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
-                (db_results['Name'].str.contains("50|Sensex|Bluechip", case=False, na=False)) &
-                (db_results['Risk'].isin(local_allowed_risks))
+        if active_universe is not None:
+            # 1. Stability (Large Cap)
+            l_cap_pool = active_universe[
+                ((active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
+                 (active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
+                (active_universe['Name'].str.contains("50|Sensex|Bluechip", case=False, na=False)) &
+                (active_universe['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
             
             if not l_cap_pool.empty:
                 candidates = l_cap_pool.head(6).index.tolist()
-                chosen = rng.sample(candidates, min(len(candidates), 3))
-                for idx in chosen:
+                for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = l_cap_pool.loc[idx]
                     themed_grid["Stability"].append({"name": r['Name'], "raw": r['Name']})
 
             # 2. Growth (Mid/Small)
-            g_mf_pool = db_results[
-                ((db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
-                 (db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
-                (db_results['Name'].str.contains("Midcap|Smallcap|Next 50", case=False, na=False)) &
-                (db_results['Risk'].isin(local_allowed_risks))
+            g_mf_pool = active_universe[
+                ((active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) |
+                 (active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))) &
+                (active_universe['Name'].str.contains("Midcap|Smallcap|Next 50", case=False, na=False)) &
+                (active_universe['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
 
             if not g_mf_pool.empty:
                 candidates = g_mf_pool.head(6).index.tolist()
-                chosen = rng.sample(candidates, min(len(candidates), 3))
-                for idx in chosen:
+                for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = g_mf_pool.loc[idx]
                     themed_grid["Growth"].append({"name": r['Name'], "raw": r['Name']})
 
             # 3. Elite Alpha (Stocks)
-            stock_pool = db_results[
-                (~db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) &
-                (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False)) &
-                (db_results['Risk'].isin(local_allowed_risks))
+            stock_pool = active_universe[
+                (~active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) &
+                (~active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False)) &
+                (active_universe['Risk'].isin(local_allowed_risks))
             ].sort_values(by='CAGR', ascending=False)
 
             if not stock_pool.empty:
                 candidates = stock_pool.head(10).index.tolist()
-                chosen = rng.sample(candidates, min(len(candidates), 3))
-                for idx in chosen:
+                for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = stock_pool.loc[idx]
                     themed_grid["Elite Alpha"].append({"name": r['Name'], "raw": r['Name']})
 
-            # 4. Commodities & Defense (Gold/Silver)
-            comm_pool = db_results[
-                (db_results['Name'].str.contains("GOLD|SILVER|SNETFGOLD|SILVERBEES", case=False, na=False))
+            # 4. Commodities & Defense
+            comm_pool = active_universe[
+                active_universe['Name'].str.contains("GOLD|SILVER|GOLDBEES|SILVERBEES", case=False, na=False)
             ].sort_values(by='CAGR', ascending=False)
 
             if not comm_pool.empty:
                 candidates = comm_pool.head(5).index.tolist()
-                chosen = rng.sample(candidates, min(len(candidates), 3))
-                for idx in chosen:
+                for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = comm_pool.loc[idx]
                     themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Name']})
 
-        # Fallback
+        # --- UNIVERSAL FALLBACK (Ensure all 4 rows are filled) ---
+        fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
+        
         if not themed_grid["Stability"]:
-            themed_grid["Stability"] = [{"name": "SBI Nifty 50", "raw": "SBI Nifty 50 ETF"}]
+             stab_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["50", "Sensex", "ETF"])]
+             if not stab_fall: stab_fall = fallback_universe
+             for s in rng.sample(stab_fall, min(len(stab_fall), 3)): 
+                 themed_grid["Stability"].append({"name": s['name'], "raw": s['symbol']})
+        
+        if not themed_grid["Growth"]:
+             grow_fall = [s for s in fallback_universe if any(x in str(s.get('name', '')) for x in ["Smallcap", "Midcap", "Next 50"])]
+             if not grow_fall: grow_fall = fallback_universe
+             for s in rng.sample(grow_fall, min(len(grow_fall), 3)): 
+                 themed_grid["Growth"].append({"name": s['name'], "raw": s['symbol']})
+             
+        if not themed_grid["Elite Alpha"]:
+             alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name', ''))]
+             if not alpha_fall: alpha_fall = fallback_universe
+             for s in rng.sample(alpha_fall, min(len(alpha_fall), 3)): 
+                 themed_grid["Elite Alpha"].append({"name": s['name'], "raw": s['symbol']})
+
         if not themed_grid["Commodities & Defense"]:
-            themed_grid["Commodities & Defense"] = [{"name": "Gold", "raw": "GOLDBEES.NS"}, {"name": "Silver", "raw": "SILVERBEES.NS"}]
+             themed_grid["Commodities & Defense"] = [
+                 {"name": "Nippon India Gold", "raw": "GOLDBEES.NS"}, 
+                 {"name": "SBI Gold", "raw": "SETFGOLD.NS"},
+                 {"name": "Nippon India Silver", "raw": "SILVERBEES.NS"}
+             ]
 
         # UI Header with Shuffle (Matched to Screenshot)
         h_col1, h_col2 = st.columns([1.8, 1])
