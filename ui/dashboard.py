@@ -316,6 +316,8 @@ NSE_RECOMMENDATIONS = {
         {"name": "Adani Power", "symbol": "ADANIPOWER.NS", "target": 40.0, "risk": "Very High", "category": "Energy"},
         {"name": "Tata Power", "symbol": "TATAPOWER.NS", "target": 28.0, "risk": "High", "category": "Energy Utilities"},
         {"name": "Dixon Tech", "symbol": "DIXON.NS", "target": 42.0, "risk": "High", "category": "Electronics"},
+        {"name": "Mazagon Dock", "symbol": "MAZDOCK.NS", "target": 55.0, "risk": "Very High", "category": "Defense"},
+        {"name": "BSE Ltd", "symbol": "BSE.NS", "target": 48.0, "risk": "High", "category": "Financials"},
         {"name": "Smallcap 250 ETF", "symbol": "SML250BEES.NS", "target": 22.0, "risk": "High", "category": "Equity Index"},
         {"name": "Olectra Greentech", "symbol": "OLECTRA.NS", "target": 48.0, "risk": "Very High", "category": "EV Tech"}
     ]
@@ -339,6 +341,18 @@ with st.sidebar:
     )
     st.markdown("---")
     st.info("🟢 Real-Time Linked")
+
+# --- PHASE 44: GLOBAL REACTIVITY & VIZ SYNC ---
+# Detect profile changes to reset the SIP Viz state automatically
+current_profile_hash = f"{age}_{risk_profile}_{horizon}"
+if 'last_profile_hash' not in st.session_state:
+    st.session_state.last_profile_hash = current_profile_hash
+
+if st.session_state.last_profile_hash != current_profile_hash:
+    # Profile changed! Clear the selected SIP asset to force a reactive refresh
+    if 'sip_search_key' in st.session_state:
+        del st.session_state.sip_search_key
+    st.session_state.last_profile_hash = current_profile_hash
 
 # ------------------------------------------------------------------------------
 # MATH PIPELINE
@@ -698,7 +712,9 @@ with tab4:
     s_col1, s_col2 = st.columns([1,1])
     with s_col2:
         s_amt_final = st.number_input("Monthly Contribution (₹)", min_value=1000, value=10000, step=1000)
-        s_yrs_final = st.slider("Horizon (Years)", 1, 25, value=5 if horizon == "Long Term (5+Y)" else horizon_to_yrs[horizon])
+        # Phase 44: Sync with sidebar horizon initially
+        default_yrs = 5 if horizon == "Long Term (5+Y)" else horizon_to_yrs.get(horizon, 5)
+        s_yrs_final = st.slider("Horizon (Years)", 1, 25, value=default_yrs)
         
     with s_col1:
         sim_horizon = "Long Term (5+Y)"
@@ -812,8 +828,12 @@ with tab4:
                     r = comm_pool.loc[idx]
                     themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Name']})
 
-        # --- UNIVERSAL FALLBACK (Strict Asset Separation) ---
+        # --- UNIVERSAL FALLBACK (Strict Asset & RISK Separation) ---
         fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
+        # Phase 44: Filter fallback by local risk tier
+        fallback_universe = [s for s in fallback_universe if str(s.get('risk', '')) in local_allowed_risks]
+        if not fallback_universe: # Guard against empty filtered list
+            fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
         
         if not themed_grid["Stability (Mutual Funds)"]:
              # Strictly Funds/ETFs (Exclude Stocks/Commodities)
