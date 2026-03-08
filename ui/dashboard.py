@@ -153,6 +153,27 @@ div.block-container {
     border-bottom: 3px solid #10b981 !important;
 }
 
+/* PHASE 47: MOBILE DYNAMIC RESPONSIVENESS */
+@media (max-width: 768px) {
+    .hero {
+        padding: 1.5rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero h1 { font-size: 2rem; }
+    .hero-metric { margin-top: 1rem; width: 100%; }
+    
+    /* Force columns to stack on mobile */
+    [data-testid="column"] {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+    
+    .stock-card { padding: 1rem !important; }
+    .stock-card h3 { font-size: 1.2rem !important; }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -269,25 +290,25 @@ def load_recommendations(horizon_str):
 # Fallback/Seed Universe for immediate use
 NSE_RECOMMENDATIONS = {
     "Emergency (0-1Y)": [
-        {"name": "Liquid Bees", "symbol": "LIQUIDBEES.NS", "target": 7.0, "risk": "Very Low", "category": "Debt"},
+        {"name": "Nippon Liquid Bees", "symbol": "LIQUIDBEES.NS", "target": 7.0, "risk": "Very Low", "category": "Debt"},
         {"name": "HDFC Liquid ETF", "symbol": "LIQUID.NS", "target": 6.8, "risk": "Very Low", "category": "Debt"},
-        {"name": "Nippon India ETF Gilt", "symbol": "GILTBEES.NS", "target": 7.5, "risk": "Low", "category": "Govt Bonds"},
         {"name": "ICICI Pru Liquid ETF", "symbol": "ICICILIQ.NS", "target": 7.1, "risk": "Very Low", "category": "Debt"},
-        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"},
-        {"name": "SBI ETF Gold", "symbol": "SETFGOLD.NS", "target": 8.9, "risk": "Low", "category": "Commodity"}
+        {"name": "DSP Liquid ETF", "symbol": "LIQUIDETF.NS", "target": 6.9, "risk": "Very Low", "category": "Debt"},
+        {"name": "Nippon India ETF Gilt", "symbol": "GILTBEES.NS", "target": 7.5, "risk": "Low", "category": "Govt Bonds"},
+        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"}
     ],
     "Short Term (1-3Y)": [
         {"name": "Nifty 50 ETF", "symbol": "NIFTYBEES.NS", "target": 12.0, "risk": "Medium", "category": "Equity Index"},
+        {"name": "Sensex ETF", "symbol": "SENSEX.NS", "target": 11.5, "risk": "Low", "category": "Equity Index"},
+        {"name": "Nifty Next 50", "symbol": "JUNIORBEES.NS", "target": 14.0, "risk": "Medium", "category": "Equity Index"},
+        {"name": "HDFC Nifty 50", "symbol": "HDFCNIFTY.NS", "target": 12.2, "risk": "Low", "category": "Equity Index"},
         {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"},
         {"name": "Silver ETF", "symbol": "SILVERBEES.NS", "target": 11.0, "risk": "Medium", "category": "Commodity"},
         {"name": "HDFC Bank", "symbol": "HDFCBANK.NS", "target": 12.5, "risk": "Low", "category": "Banking"},
-        {"name": "TCS", "symbol": "TCS.NS", "target": 11.5, "risk": "Low", "category": "IT"},
-        {"name": "ITC", "symbol": "ITC.NS", "target": 10.2, "risk": "Low", "category": "FMCG"},
-        {"name": "HUL", "symbol": "HINDUNILVR.NS", "target": 10.5, "risk": "Low", "category": "FMCG"},
-        {"name": "Nestle India", "symbol": "NESTLEIND.NS", "target": 11.0, "risk": "Low", "category": "FMCG"},
-        {"name": "Kotak Bank", "symbol": "KOTAKBANK.NS", "target": 12.0, "risk": "Low", "category": "Banking"},
         {"name": "ICICI Bank", "symbol": "ICICIBANK.NS", "target": 13.5, "risk": "Low", "category": "Banking"},
-        {"name": "Infosys", "symbol": "INFY.NS", "target": 11.8, "risk": "Low", "category": "IT"}
+        {"name": "Kotak Bank", "symbol": "KOTAKBANK.NS", "target": 12.0, "risk": "Low", "category": "Banking"},
+        {"name": "Infosys", "symbol": "INFY.NS", "target": 11.8, "risk": "Low", "category": "IT"},
+        {"name": "TCS", "symbol": "TCS.NS", "target": 11.5, "risk": "Low", "category": "IT"}
     ],
     "Medium (3-5Y)": [
         {"name": "Reliance", "symbol": "RELIANCE.NS", "target": 15.0, "risk": "Medium", "category": "Energy"},
@@ -305,20 +326,17 @@ NSE_RECOMMENDATIONS = {
         {"name": "NTPC", "symbol": "NTPC.NS", "target": 14.2, "risk": "Medium", "category": "Energy Utilities"}
     ],
     "Long Term (5+Y)": [
-        {"name": "Nifty IT ETF", "symbol": "ITBEES.NS", "target": 16.0, "risk": "High", "category": "Equity Index"},
+        {"name": "Smallcap 250 ETF", "symbol": "SML250BEES.NS", "target": 22.0, "risk": "High", "category": "Equity Index"},
+        {"name": "Nifty Next 50", "symbol": "JUNIORBEES.NS", "target": 18.0, "risk": "Medium", "category": "Equity Index"},
+        {"name": "Midcap 150 ETF", "symbol": "MID150BEES.NS", "target": 20.0, "risk": "High", "category": "Equity Index"},
+        {"name": "BSE 500 ETF", "symbol": "BSE500.NS", "target": 15.0, "risk": "Medium", "category": "Equity Index"},
         {"name": "Zomato", "symbol": "ZOMATO.NS", "target": 35.0, "risk": "High", "category": "Tech"},
         {"name": "Jio Financial", "symbol": "JIOFIN.NS", "target": 28.0, "risk": "High", "category": "Financials"},
         {"name": "Trent", "symbol": "TRENT.NS", "target": 32.0, "risk": "High", "category": "Retail"},
-        {"name": "RVNL", "symbol": "RVNL.NS", "target": 38.0, "risk": "High", "category": "Infra"},
-        {"name": "IRFC", "symbol": "IRFC.NS", "target": 30.0, "risk": "High", "category": "Infra"},
-        {"name": "Suzlon", "symbol": "SUZLON.NS", "target": 45.0, "risk": "Very High", "category": "Energy"},
         {"name": "HAL", "symbol": "HAL.NS", "target": 35.0, "risk": "High", "category": "Defense"},
-        {"name": "Adani Power", "symbol": "ADANIPOWER.NS", "target": 40.0, "risk": "Very High", "category": "Energy"},
-        {"name": "Tata Power", "symbol": "TATAPOWER.NS", "target": 28.0, "risk": "High", "category": "Energy Utilities"},
-        {"name": "Dixon Tech", "symbol": "DIXON.NS", "target": 42.0, "risk": "High", "category": "Electronics"},
         {"name": "Mazagon Dock", "symbol": "MAZDOCK.NS", "target": 55.0, "risk": "Very High", "category": "Defense"},
         {"name": "BSE Ltd", "symbol": "BSE.NS", "target": 48.0, "risk": "High", "category": "Financials"},
-        {"name": "Smallcap 250 ETF", "symbol": "SML250BEES.NS", "target": 22.0, "risk": "High", "category": "Equity Index"},
+        {"name": "RVNL", "symbol": "RVNL.NS", "target": 38.0, "risk": "High", "category": "Infra"},
         {"name": "Olectra Greentech", "symbol": "OLECTRA.NS", "target": 48.0, "risk": "Very High", "category": "EV Tech"}
     ]
 }
@@ -672,21 +690,24 @@ with tab3:
              fig.add_trace(go.Candlestick(x=df_hist.index, open=df_hist['Open'], high=df_hist['High'], low=df_hist['Low'], close=df_hist['Close'],
                                           increasing_line_color='#10b981', decreasing_line_color='#ef4444', name="Price"), row=1, col=1)
         else:
-             fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['Close'], mode='lines', line=dict(color='#0f172a', width=2), name="Price"), row=1, col=1)
+             fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['Close'], mode='lines', line={"color": "#0f172a", "width": 2}, name="Price"), row=1, col=1)
              
-        fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['SMA_20'], mode='lines', line=dict(color='#f59e0b', width=1.5, dash='dot'), name="20 SMA"), row=1, col=1)
+        fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['SMA_20'], mode='lines', line={"color": "#f59e0b", "width": 1.5, "dash": "dot"}, name="20 SMA"), row=1, col=1)
         
         if 'Volume' in df_hist.columns:
             colors = ['#10b981' if row['Close'] >= row['Open'] else '#ef4444' for i, row in df_hist.iterrows()]
             fig.add_trace(go.Bar(x=df_hist.index, y=df_hist['Volume'], marker_color=colors, name="Volume", opacity=0.7), row=2, col=1)
             
         fig.update_layout(
-             height=600, margin=dict(t=20, b=20, r=20, l=20),
+             height=600, margin={"t": 40, "b": 20, "r": 20, "l": 20},
              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#ffffff",
-             xaxis_rangeslider_visible=False, showlegend=False, hovermode="x unified"
+             xaxis_rangeslider_visible=False, showlegend=True, 
+             hovermode="x unified",
+             font={"family": "Inter, sans-serif", "size": 12, "color": "#0f172a"},
+             legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1}
         )
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0', row=1, col=1)
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0', row=1, col=1)
+        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0', title_font={"size": 14}, row=1, col=1)
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0', title_font={"size": 14}, row=1, col=1)
         
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -898,22 +919,27 @@ with tab4:
         discover_mode = st.radio("Asset Discovery Mode", ["AI Suggestions", "Search All / Custom"], horizontal=True, label_visibility="collapsed")
         
         if discover_mode == "AI Suggestions":
-            if 'sip_search_key' not in st.session_state:
-                 st.session_state.sip_search_key = themed_grid["Stability (Mutual Funds)"][0]['raw']
-
-            all_options = sorted(db_results['Name'].unique().tolist()) if db_results is not None else ["Nifty 50 ETF"]
-            # Phase 35: Professional selectbox mapping (Clean Label -> Raw Symbol)
-            clean_to_raw = {clean_elite_name(opt): opt for opt in all_options}
+            # Phase 45: Ensure the dropdown respects card selection instantly
+            all_options = sorted(db_results['Name'].unique().tolist()) if db_results is not None else []
+            # Hybrid pool: Search DB Results + Seed Universe
+            seed_names = [s['name'] for s in fallback_universe]
+            combined_pool = sorted(list(set(all_options + seed_names)))
+            
+            clean_to_raw = {clean_elite_name(opt): opt for opt in combined_pool}
             clean_options = list(clean_to_raw.keys())
             
-            try:
-                 # Search for the CURRENT key in clean names
-                 current_raw = st.session_state.sip_search_key
-                 current_clean = clean_elite_name(current_raw)
-                 def_idx = clean_options.index(current_clean) if current_clean in clean_options else 0
-            except:
-                 def_idx = 0
+            current_raw = st.session_state.get('sip_search_key', 'NIFTYBEES.NS')
+            # Find the best clean match for the current raw symbol
+            current_clean = clean_elite_name(current_raw)
+            # Try to resolve raw if it's a symbol
+            if current_raw not in combined_pool:
+                 for opt in combined_pool:
+                      if resolve_ticker(opt) == current_raw:
+                           current_clean = clean_elite_name(opt)
+                           break
 
+            def_idx = clean_options.index(current_clean) if current_clean in clean_options else 0
+            
             s_asset_clean = st.selectbox("🎯 Selected Target Asset", options=clean_options, index=def_idx)
             s_asset = clean_to_raw.get(s_asset_clean, s_asset_clean)
             s_sym = resolve_ticker(s_asset)
@@ -966,10 +992,32 @@ with tab4:
              with sc2: st.metric("Final Value", format_inr(f_corpus))
              with sc3: st.metric("Return (CAGR)", f"{(cagr*100):.1f}%")
 
+             # Phase 46: High-Contrast Professional SIP Viz
              fig_area = go.Figure()
-             fig_area.add_trace(go.Scatter(x=c_closes.index, y=cum_invested, fill='tozeroy', mode='lines', line=dict(color='#cbd5e1'), name='Principal'))
-             fig_area.add_trace(go.Scatter(x=c_closes.index, y=port_val, fill='tonexty', mode='lines', line=dict(color='#10b981'), name='Market Value'))
-             fig_area.update_layout(height=300, margin=dict(t=0,b=0,l=0,r=0), hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", showlegend=False)
+             fig_area.add_trace(go.Scatter(
+                 x=c_closes.index, y=cum_invested, 
+                 fill='tozeroy', mode='lines', 
+                 line={"color": "#334155", "width": 1}, 
+                 name='Principal', 
+                 fillcolor='rgba(51, 65, 85, 0.1)'
+             ))
+             fig_area.add_trace(go.Scatter(
+                 x=c_closes.index, y=port_val, 
+                 fill='tonexty', mode='lines', 
+                 line={"color": "#10b981", "width": 3}, 
+                 name='Market Value', 
+                 fillcolor='rgba(16, 185, 129, 0.2)'
+             ))
+             fig_area.update_layout(
+                 height=350, margin={"t": 30, "b": 20, "l": 10, "r": 10}, 
+                 hovermode="x unified", 
+                 paper_bgcolor="rgba(0,0,0,0)", 
+                 plot_bgcolor="rgba(255,255,255,0.05)",
+                 legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1},
+                 font={"family": "Inter, sans-serif", "size": 12}
+             )
+             fig_area.update_xaxes(gridcolor="rgba(0,0,0,0.05)")
+             fig_area.update_yaxes(gridcolor="rgba(0,0,0,0.05)")
              st.plotly_chart(fig_area, use_container_width=True)
          else:
               st.error("Insufficient historical data for this asset. Please try another ticker.")
