@@ -295,20 +295,29 @@ NSE_RECOMMENDATIONS = {
         {"name": "ICICI Pru Liquid ETF", "symbol": "ICICILIQ.NS", "target": 7.1, "risk": "Very Low", "category": "Debt"},
         {"name": "DSP Liquid ETF", "symbol": "LIQUIDETF.NS", "target": 6.9, "risk": "Very Low", "category": "Debt"},
         {"name": "Nippon India ETF Gilt", "symbol": "GILTBEES.NS", "target": 7.5, "risk": "Low", "category": "Govt Bonds"},
-        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"}
+        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"},
+        {"name": "Silver ETF", "symbol": "SILVERBEES.NS", "target": 10.5, "risk": "Medium", "category": "Commodity"},
+        {"name": "Aditya Birla Liquid", "symbol": "ABSLNN50ET.NS", "target": 6.7, "risk": "Very Low", "category": "Debt"}
     ],
     "Short Term (1-3Y)": [
         {"name": "Nifty 50 ETF", "symbol": "NIFTYBEES.NS", "target": 12.0, "risk": "Medium", "category": "Equity Index"},
         {"name": "Sensex ETF", "symbol": "SENSEX.NS", "target": 11.5, "risk": "Low", "category": "Equity Index"},
         {"name": "Nifty Next 50", "symbol": "JUNIORBEES.NS", "target": 14.0, "risk": "Medium", "category": "Equity Index"},
         {"name": "HDFC Nifty 50", "symbol": "HDFCNIFTY.NS", "target": 12.2, "risk": "Low", "category": "Equity Index"},
-        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"},
-        {"name": "Silver ETF", "symbol": "SILVERBEES.NS", "target": 11.0, "risk": "Medium", "category": "Commodity"},
+        {"name": "ICICI Nifty", "symbol": "ICICINIFTY.NS", "target": 12.1, "risk": "Low", "category": "Equity Index"},
+        {"name": "SBI Nifty ETF", "symbol": "SBIETFNIFTY.NS", "target": 11.9, "risk": "Low", "category": "Equity Index"},
+        {"name": "Kotak Nifty ETF", "symbol": "KOTAKNIFTY.NS", "target": 12.0, "risk": "Low", "category": "Equity Index"},
         {"name": "HDFC Bank", "symbol": "HDFCBANK.NS", "target": 12.5, "risk": "Low", "category": "Banking"},
         {"name": "ICICI Bank", "symbol": "ICICIBANK.NS", "target": 13.5, "risk": "Low", "category": "Banking"},
         {"name": "Kotak Bank", "symbol": "KOTAKBANK.NS", "target": 12.0, "risk": "Low", "category": "Banking"},
         {"name": "Infosys", "symbol": "INFY.NS", "target": 11.8, "risk": "Low", "category": "IT"},
-        {"name": "TCS", "symbol": "TCS.NS", "target": 11.5, "risk": "Low", "category": "IT"}
+        {"name": "TCS", "symbol": "TCS.NS", "target": 11.5, "risk": "Low", "category": "IT"},
+        {"name": "Wipro", "symbol": "WIPRO.NS", "target": 10.5, "risk": "Low", "category": "IT"},
+        {"name": "HCL Tech", "symbol": "HCLTECH.NS", "target": 12.2, "risk": "Low", "category": "IT"},
+        {"name": "ITC Ltd", "symbol": "ITC.NS", "target": 10.0, "risk": "Low", "category": "FMCG"},
+        {"name": "HUL", "symbol": "HINDUNILVR.NS", "target": 9.5, "risk": "Low", "category": "FMCG"},
+        {"name": "Coal India", "symbol": "COALINDIA.NS", "target": 11.0, "risk": "Low", "category": "Energy"},
+        {"name": "Gold ETF", "symbol": "GOLDBEES.NS", "target": 9.0, "risk": "Low", "category": "Commodity"}
     ],
     "Medium (3-5Y)": [
         {"name": "Reliance", "symbol": "RELIANCE.NS", "target": 15.0, "risk": "Medium", "category": "Energy"},
@@ -316,14 +325,19 @@ NSE_RECOMMENDATIONS = {
         {"name": "Bajaj Finance", "symbol": "BAJFINANCE.NS", "target": 22.0, "risk": "Medium", "category": "Financials"},
         {"name": "Maruti Suzuki", "symbol": "MARUTI.NS", "target": 16.0, "risk": "Medium", "category": "Auto"},
         {"name": "Mahindra & Mahindra", "symbol": "M&M.NS", "target": 17.5, "risk": "Medium", "category": "Auto"},
-        {"name": "Titan", "symbol": "TITAN.NS", "target": 19.0, "risk": "Medium", "category": "Consumer"},
+        {"name": "Titan Company", "symbol": "TITAN.NS", "target": 19.0, "risk": "Medium", "category": "Consumer"},
         {"name": "Midcap 150 ETF", "symbol": "MID150BEES.NS", "target": 16.5, "risk": "Medium", "category": "Equity Index"},
         {"name": "Sun Pharma", "symbol": "SUNPHARMA.NS", "target": 14.5, "risk": "Medium", "category": "Pharma"},
+        {"name": "Cipla", "symbol": "CIPLA.NS", "target": 15.0, "risk": "Medium", "category": "Pharma"},
+        {"name": "Dr Reddy's", "symbol": "DRREDDY.NS", "target": 13.8, "risk": "Medium", "category": "Pharma"},
         {"name": "Tata Motors", "symbol": "TATAMOTORS.NS", "target": 20.0, "risk": "Medium", "category": "Auto"},
         {"name": "Bank Nifty ETF", "symbol": "BANKBEES.NS", "target": 15.5, "risk": "Medium", "category": "Equity Index"},
         {"name": "State Bank of India", "symbol": "SBIN.NS", "target": 14.0, "risk": "Medium", "category": "Banking"},
         {"name": "Bharti Airtel", "symbol": "BHARTIARTL.NS", "target": 16.8, "risk": "Medium", "category": "Telecom"},
-        {"name": "NTPC", "symbol": "NTPC.NS", "target": 14.2, "risk": "Medium", "category": "Energy Utilities"}
+        {"name": "NTPC", "symbol": "NTPC.NS", "target": 14.2, "risk": "Medium", "category": "Energy Utilities"},
+        {"name": "Power Grid", "symbol": "POWERGRID.NS", "target": 13.5, "risk": "Medium", "category": "Energy Utilities"},
+        {"name": "JSW Steel", "symbol": "JSWSTEEL.NS", "target": 15.0, "risk": "Medium", "category": "Metals"},
+        {"name": "Tata Steel", "symbol": "TATASTEEL.NS", "target": 14.8, "risk": "Medium", "category": "Metals"}
     ],
     "Long Term (5+Y)": [
         {"name": "Smallcap 250 ETF", "symbol": "SML250BEES.NS", "target": 22.0, "risk": "High", "category": "Equity Index"},
@@ -332,12 +346,18 @@ NSE_RECOMMENDATIONS = {
         {"name": "BSE 500 ETF", "symbol": "BSE500.NS", "target": 15.0, "risk": "Medium", "category": "Equity Index"},
         {"name": "Zomato", "symbol": "ZOMATO.NS", "target": 35.0, "risk": "High", "category": "Tech"},
         {"name": "Jio Financial", "symbol": "JIOFIN.NS", "target": 28.0, "risk": "High", "category": "Financials"},
-        {"name": "Trent", "symbol": "TRENT.NS", "target": 32.0, "risk": "High", "category": "Retail"},
+        {"name": "Trent Ltd", "symbol": "TRENT.NS", "target": 32.0, "risk": "High", "category": "Retail"},
         {"name": "HAL", "symbol": "HAL.NS", "target": 35.0, "risk": "High", "category": "Defense"},
         {"name": "Mazagon Dock", "symbol": "MAZDOCK.NS", "target": 55.0, "risk": "Very High", "category": "Defense"},
-        {"name": "BSE Ltd", "symbol": "BSE.NS", "target": 48.0, "risk": "High", "category": "Financials"},
         {"name": "RVNL", "symbol": "RVNL.NS", "target": 38.0, "risk": "High", "category": "Infra"},
-        {"name": "Olectra Greentech", "symbol": "OLECTRA.NS", "target": 48.0, "risk": "Very High", "category": "EV Tech"}
+        {"name": "IRFC", "symbol": "IRFC.NS", "target": 35.0, "risk": "High", "category": "Infra"},
+        {"name": "BSE Ltd", "symbol": "BSE.NS", "target": 48.0, "risk": "Very High", "category": "Financials"},
+        {"name": "Olectra Greentech", "symbol": "OLECTRA.NS", "target": 48.0, "risk": "Very High", "category": "EV Tech"},
+        {"name": "Suzlon Energy", "symbol": "SUZLON.NS", "target": 45.0, "risk": "Very High", "category": "Renewables"},
+        {"name": "KPI Green Energy", "symbol": "KPIGREEN.NS", "target": 50.0, "risk": "Very High", "category": "Renewables"},
+        {"name": "Adani Green", "symbol": "ADANIGREEN.NS", "target": 35.0, "risk": "High", "category": "Renewables"},
+        {"name": "Adani Enterp.", "symbol": "ADANIENT.NS", "target": 28.0, "risk": "High", "category": "Conglomerate"},
+        {"name": "Nykaa", "symbol": "NYKAA.NS", "target": 25.0, "risk": "High", "category": "Tech"}
     ]
 }
 
@@ -367,9 +387,14 @@ if 'last_profile_hash' not in st.session_state:
     st.session_state.last_profile_hash = current_profile_hash
 
 if st.session_state.last_profile_hash != current_profile_hash:
-    # Profile changed! Clear the selected SIP asset to force a reactive refresh
-    if 'sip_search_key' in st.session_state:
-        del st.session_state.sip_search_key
+    # Profile changed! 
+    # PHASE 48: Instant Re-Seeding for True Reactivity
+    # Instead of just deleting, pick a fresh optimal asset from the new profile's horizon
+    optimal_pool = NSE_RECOMMENDATIONS.get(horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
+    if optimal_pool:
+        # Pick the first one (usually the most stable/index) as seed
+        st.session_state.sip_search_key = optimal_pool[0]['symbol']
+    
     st.session_state.last_profile_hash = current_profile_hash
 
 # ------------------------------------------------------------------------------
@@ -425,79 +450,52 @@ if db_results is not None and not db_results.empty:
     # Phase 32: Purge ETFs/Mutual Funds from Market Picks (Stocks ONLY)
     stock_only_df = db_results[
         (~db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) &
-        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False))
-    ]
+        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False)) &
+        (db_results['Risk'].isin(allowed_risks))
+    ].sort_values(by='CAGR', ascending=False)
     
-    # Filter by Risk
-    filtered_df = stock_only_df[stock_only_df['Risk'].isin(allowed_risks)]
-    
-    if not filtered_df.empty:
-        # Phase 24: Profile-Anchoring
-        # Phase 24: Profile-Anchoring for visual distinction
-        # Force diversity: at least 2 from the "defining" risk tier for the profile
-        if global_suggested_risk == "Balanced": # Anchor to Low
-            defining = filtered_df[filtered_df['Risk'] == "Low"].sort_values(by='CAGR', ascending=False).head(2)
-            others = filtered_df[~filtered_df['Symbol'].isin(defining['Symbol'])].sort_values(by='CAGR', ascending=False).head(2)
-            sorted_tier_df = pd.concat([defining, others])
-        elif global_suggested_risk == "Growth": # Anchor to High/Very High
-            defining = filtered_df[filtered_df['Risk'].isin(["High", "Very High"])].sort_values(by='CAGR', ascending=False).head(2)
-            others = filtered_df[~filtered_df['Symbol'].isin(defining['Symbol'])].sort_values(by='CAGR', ascending=False).head(2)
-            sorted_tier_df = pd.concat([defining, others])
-        else:
-            sorted_tier_df = filtered_df.sort_values(by='CAGR', ascending=False).head(4)
-
-        sample = sorted_tier_df.to_dict('records')
+    if not stock_only_df.empty:
+        # Phase 48: Pro Assistant Variety (Weighted Sampling)
+        # Select different sets based on Risk Profile to ensure variety and reactivity
+        top_candidates = stock_only_df.head(10).to_dict('records')
+        rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
+        sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 4))
         
         recommended_stocks = []
         for i, s in enumerate(sample):
             action = '🔵 ACCUMULATE'
             if i == 0: action = '✨ AI TOP PICK'
-            
             recommended_stocks.append({
-                "name": s['Name'], 
-                "symbol": s['Symbol'], 
-                "target": s['CAGR'], 
-                "risk": s['Risk'], 
-                "category": s['Sector'],
-                "Action": action
+                "name": s['Name'], "symbol": s['Symbol'], "target": s['CAGR'], 
+                "risk": s['Risk'], "category": s['Sector'], "Action": action
             })
     else:
-        # Fallback to hardcoded
-        filtered_universe = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks]
-        if len(filtered_universe) < 3: filtered_universe = NSE_RECOMMENDATIONS[horizon]
-        sorted_fallback = sorted(filtered_universe, key=lambda x: x['target'], reverse=True)
-        recommended_stocks = sorted_fallback[:4]
-        for i, s in enumerate(recommended_stocks):
-            s['Action'] = '✨ AI TOP PICK' if i == 0 else '🔵 ACCUMULATE'
+        # Emergency Fallback to hardcoded stock assets
+        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks and "ETF" not in s['name']][:4]
 else:
-    # Use Hardcoded Universe (Phase 6 logic) with Sorting
-    filtered_universe = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks]
-    if len(filtered_universe) < 3: filtered_universe = NSE_RECOMMENDATIONS[horizon]
-    sorted_fallback = sorted(filtered_universe, key=lambda x: x['target'], reverse=True)
-    recommended_stocks = sorted_fallback[:4]
-    for i, s in enumerate(recommended_stocks):
+    # Use Expanded Hardcoded Universe (Phase 48)
+    filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks and "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol',''))]
+    if not filtered_stocks: filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if "ETF" not in str(s.get('name',''))]
+    
+    # Variety Sampling for Daily Assistant Feel
+    rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
+    sample = rng_mkt.sample(filtered_stocks, min(len(filtered_stocks), 4)) if filtered_stocks else []
+    
+    recommended_stocks = []
+    for i, s in enumerate(sample):
         s['Action'] = '✨ AI TOP PICK' if i == 0 else '🔵 ACCUMULATE'
+        recommended_stocks.append(s)
 
 df_reco = pd.DataFrame(recommended_stocks)
 if not df_reco.empty:
     df_reco['Allocation'] = investment_amount / len(df_reco)
-    
-    # Standardize column naming for live price lookup
-    if 'symbol' not in df_reco.columns and 'Symbol' in df_reco.columns:
-        df_reco['symbol'] = df_reco['Symbol']
-
+    if 'symbol' not in df_reco.columns and 'Symbol' in df_reco.columns: df_reco['symbol'] = df_reco['Symbol']
     live_targets = []
-    for sym in df_reco['symbol']:
-        live_targets.append(fetch_live_price(sym) or 1.0)
+    for sym in df_reco['symbol']: live_targets.append(fetch_live_price(sym) or 1.0)
     df_reco['live_price'] = live_targets
-
     df_reco['Quantity'] = (df_reco['Allocation'] / df_reco['live_price']).apply(lambda x: max(1, np.floor(x))).astype(int)
     df_reco['Total_Value'] = df_reco['Quantity'] * df_reco['live_price']
-    
-    if 'Action' not in df_reco.columns:
-        df_reco['Action'] = ['🟢 STRONG BUY' if i == 0 else '🔵 ACCUMULATE' for i in range(len(df_reco))]
 else:
-    # Create empty DF with expected columns to avoid downstream errors
     df_reco = pd.DataFrame(columns=['name', 'symbol', 'Total_Value', 'Quantity', 'live_price', 'Action', 'category', 'risk', 'target'])
 
 # ------------------------------------------------------------------------------
@@ -991,6 +989,13 @@ with tab4:
              with sc1: st.metric("Invested", format_inr(t_inv))
              with sc2: st.metric("Final Value", format_inr(f_corpus))
              with sc3: st.metric("Return (CAGR)", f"{(cagr*100):.1f}%")
+
+             # Phase 48: Enriched Detail Display
+             det1, det2, det3 = st.columns(3)
+             s_info = fetch_stock_info(s_sym)
+             with det1: st.markdown(f"**Sector:** {s_info.get('sector', 'N/A')}")
+             with det2: st.markdown(f"**52W High:** ₹{s_info.get('52_high', 0):,.2f}")
+             with det3: st.markdown(f"**52W Low:** ₹{s_info.get('52_low', 0):,.2f}")
 
              # Phase 46: High-Contrast Professional SIP Viz
              fig_area = go.Figure()
