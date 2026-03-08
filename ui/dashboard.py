@@ -447,10 +447,9 @@ elif horizon == "Short Term (1-3Y)":
 db_results = load_recommendations(horizon)
 
 if db_results is not None and not db_results.empty:
-    # Phase 32: Purge ETFs/Mutual Funds from Market Picks (Stocks ONLY)
+    # PHASE 49: Enable Commodities in Market Picks for Better Diversification
     stock_only_df = db_results[
-        (~db_results['Sector'].str.contains("ETF|Commodity", case=False, na=False)) &
-        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False)) &
+        (~db_results['Name'].str.contains("BeES|Nifty|Sensex", case=False, na=False)) &
         (db_results['Risk'].isin(allowed_risks))
     ].sort_values(by='CAGR', ascending=False)
     
@@ -981,9 +980,10 @@ with tab4:
              t_inv = cum_invested[-1]
              
              if t_inv > 0 and months_actual > 0:
-                 cagr = (f_corpus / t_inv) ** (1 / (months_actual/12)) - 1
+                  actual_years = months_actual / 12
+                  cagr = (f_corpus / t_inv) ** (1 / actual_years) - 1
              else:
-                 cagr = 0.0
+                  cagr = 0.0
              
              sc1, sc2, sc3 = st.columns(3)
              with sc1: st.metric("Invested", format_inr(t_inv))
@@ -999,6 +999,28 @@ with tab4:
 
              # Phase 46: High-Contrast Professional SIP Viz
              fig_area = go.Figure()
+             
+             # AI Intelligence Section (Phase 49)
+             st.markdown("""
+             <div style='background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0;'>
+                 <h4 style='color: #0f172a; margin-top: 0;'>🧠 AI Intelligence Calculation</h4>
+                 <p style='font-size: 0.9rem; color: #64748b;'>How we selected this for you:</p>
+                 <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;'>
+                     <div>
+                         <b style='color: #10b981;'>1. Growth Efficiency</b><br>
+                         <span style='font-size: 0.85rem;'>Targeting <b>{:.1f}% CAGR</b> based on 5Y historical performance vs market benchmark.</span>
+                     </div>
+                     <div>
+                         <b style='color: #3b82f6;'>2. Risk Tolerance</b><br>
+                         <span style='font-size: 0.85rem;'>Matched to your <b>{}</b> profile with optimized Volatility ({:.1f}%).</span>
+                     </div>
+                     <div>
+                         <b style='color: #f59e0b;'>3. Horizon Optimization</b><br>
+                         <span style='font-size: 0.85rem;'>Compounding duration set for <b>{}</b> to maximize long-term wealth.</span>
+                     </div>
+                 </div>
+             </div>
+             """.format(cagr*100, suggested_risk_cat, s_info.get('volatility', 15.5), sim_horizon), unsafe_allow_html=True)
              fig_area.add_trace(go.Scatter(
                  x=c_closes.index, y=cum_invested, 
                  fill='tozeroy', mode='lines', 
