@@ -618,10 +618,10 @@ if db_results is not None and not db_results.empty:
     
     if not stock_only_df.empty:
         # Phase 48: Pro Assistant Variety (Weighted Sampling)
-        # Select different sets based on Risk Profile to ensure variety and reactivity
-        top_candidates = stock_only_df.head(10).to_dict('records')
+        # We now consider ALL fundamentally cleared stocks and output a robust list
+        top_candidates = stock_only_df.to_dict('records')
         rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
-        sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 4))
+        sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 10))
         
         recommended_stocks = []
         for i, s in enumerate(sample):
@@ -633,7 +633,7 @@ if db_results is not None and not db_results.empty:
             })
     else:
         # Emergency Fallback to hardcoded stock assets
-        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks and "ETF" not in str(s.get('name',''))][:4]
+        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks and "ETF" not in str(s.get('name',''))][:8]
 else:
     # Use Expanded Hardcoded Universe (Phase 48)
     filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks and "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol',''))]
@@ -641,7 +641,7 @@ else:
     
     # Variety Sampling for Daily Assistant Feel
     rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
-    sample = rng_mkt.sample(filtered_stocks, min(len(filtered_stocks), 4)) if filtered_stocks else []
+    sample = rng_mkt.sample(filtered_stocks, min(len(filtered_stocks), 8)) if filtered_stocks else []
     
     recommended_stocks = []
     for i, s in enumerate(sample):
