@@ -11,12 +11,20 @@ from sklearn.cluster import KMeans
 DB_PATH = "backend/screener_db.csv"
 TICKER_LIMIT = 500  # Start with Top 500 to prove the engine
 PAUSE_BETWEEN_STOCKS = 0.5  # Seconds to wait (prevents rate limiting)
+# =====================================================================
+# ENTERPRISE SCALE CONFIGURATION
+# =====================================================================
+# True Production Mode: Scans the entire NSE 2000+ Universe.
+# WARNING: Requires a paid Institutional Developer API Key (e.g., Bloomberg, Zerodha Kite).
+# Attempting to scrape 2000 assets simultaneously via free yfinance will result in severe IP Bans.
+SCAN_FULL_UNIVERSE = False
 
-# Top 100 Most Liquid NSE Tickers + Wide ETF Universe
+# The Academic / Free-Tier Safe Array
+# We strictly limit the AI to processing the highest-liquidity Top 150+ assets to prevent 
+# destructive API rate-limiting during the Viva presentation.
 NSE_TICKERS = [
-    # --- BLUECHIP STOCKS ---
-    "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS", "HINDUNILVR.NS",
-    "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "LICI.NS", "KOTAKBANK.NS", "LT.NS",
+    # Nifty 50
+    "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "LICI.NS", "KOTAKBANK.NS", "LT.NS",
     "AXISBANK.NS", "HCLTECH.NS", "BAJFINANCE.NS", "SUNPHARMA.NS", "MARUTI.NS", "ASIANPAINT.NS",
     "TITAN.NS", "ADANIENT.NS", "ULTRACEMCO.NS", "WIPRO.NS", "NTPC.NS", "M&M.NS",
     "JSWSTEEL.NS", "ONGC.NS", "POWERGRID.NS", "TATASTEEL.NS", "ADANIPORTS.NS", "GRASIM.NS",
