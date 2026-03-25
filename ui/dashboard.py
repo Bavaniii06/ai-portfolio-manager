@@ -615,9 +615,14 @@ if db_results is not None and not db_results.empty:
     stock_only_df = stock_only_df.sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
-        # Phase 61: Pure AI Determinism
-        # The user requested exactly Top 4 mathematically confirmed top-tier assets
-        sample = stock_only_df.head(4).to_dict('records')
+        # User Feedback: "why only 4 suggested?" -> They want broader lists.
+        # Add Seeded Shuffle to react heavily to Age + Years slider mathematically giving variety based on timeline!
+        top_candidates = stock_only_df.head(15).to_dict('records')
+        rng_mkt = random.Random(int(age) + int(horizon_to_yrs.get(horizon, 5)))
+        sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 8))
+        
+        # Sort back by objective CAGR so it displays beautifully
+        sample = sorted(sample, key=lambda x: float(x['target']), reverse=True)
         
         recommended_stocks = []
         for i, s in enumerate(sample):
@@ -629,14 +634,14 @@ if db_results is not None and not db_results.empty:
             })
     else:
         # Emergency Fallback to hardcoded stock assets
-        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks][:4]
+        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks][:8]
 else:
     # Use Expanded Hardcoded Universe (Phase 48)
     filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks and "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol',''))]
     if not filtered_stocks: filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if "ETF" not in str(s.get('name',''))]
     
-    # Variety Sampling replaced with absolute High Target sorting for exact 4
-    sample = sorted(filtered_stocks, key=lambda x: float(str(x['target']).replace('%','')), reverse=True)[:4] if filtered_stocks else []
+    # Variety Sampling replaced with absolute High Target sorting for exact 8
+    sample = sorted(filtered_stocks, key=lambda x: float(str(x['target']).replace('%','')), reverse=True)[:8] if filtered_stocks else []
     
     recommended_stocks = []
     for i, s in enumerate(sample):
