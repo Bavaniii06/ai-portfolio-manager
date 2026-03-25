@@ -4,7 +4,7 @@ import numpy as np
 import time
 import os
 from datetime import datetime
-
+from sklearn.cluster import KMeans
 # ------------------------------------------------------------------------------
 # CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -63,12 +63,9 @@ def calculate_metrics(df):
     # Volatility
     vol = df['Close'].pct_change().std() * np.sqrt(12)
     
-    # Risk Categorization
-    if max_drawdown > -0.10: risk = "Low"
-    elif max_drawdown > -0.25: risk = "Medium"
-    else: risk = "High"
-    
-    if cagr > 0.40: risk = "Very High" # Speculative growth
+    # Risk categorization will be handled post-processing by Machine Learning (K-Means)
+    # Temporary placeholder
+    risk = "Pending ML"
     
     return {
         "CAGR": round(cagr * 100, 2),
@@ -122,9 +119,37 @@ def run_screener():
         if elapsed < PAUSE_BETWEEN_STOCKS:
             time.sleep(PAUSE_BETWEEN_STOCKS - elapsed)
 
-    # Save to CSV
+    # --- PHASE 55: AI UNSUPERVISED MACHINE LEARNING (K-MEANS) ---
     if results:
         df_final = pd.DataFrame(results)
+        
+        print("\n🧠 Initializing K-Means AI for Risk Clustering...")
+        # Select Features: Volatility (Risk) and Max Drawdown (Risk)
+        features = df_final[['Volatility', 'Max_Drawdown']]
+        
+        # Fit AI Model
+        kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+        df_final['Cluster'] = kmeans.fit_predict(features)
+        
+        # Determine strict Risk mapping by evaluating the cluster centers
+        centers = pd.DataFrame(kmeans.cluster_centers_, columns=['Volatility', 'Max_Drawdown'])
+        # High Volatility + High Drawdown (very negative) = High Risk
+        centers['Risk_Score'] = centers['Volatility'] - centers['Max_Drawdown']
+        rank = centers.sort_values(by='Risk_Score').index.tolist()
+        
+        # Map back to our dashboard strings
+        risk_labels = {rank[0]: "Very Low", rank[1]: "Low", rank[2]: "Medium", rank[3]: "High"}
+        df_final['Risk'] = df_final['Cluster'].map(risk_labels)
+        
+        # Identify "Very High" Growth mathematically (Top 5% CAGR inside High risk)
+        high_risk_mask = df_final['Risk'] == 'High'
+        cagr_threshold = df_final.loc[high_risk_mask, 'CAGR'].quantile(0.95) if high_risk_mask.sum() > 0 else 999
+        df_final.loc[high_risk_mask & (df_final['CAGR'] >= cagr_threshold), 'Risk'] = 'Very High'
+        
+        # Clean up
+        df_final.drop(columns=['Cluster'], inplace=True)
+        print("✅ AI Clustering Complete!")
+
         df_final.to_csv(DB_PATH, index=False)
         print(f"\n✨ SUCCESS: Screener Database created with {len(results)} assets at {DB_PATH}")
     else:

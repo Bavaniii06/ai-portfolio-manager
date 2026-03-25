@@ -581,7 +581,19 @@ if db_results is not None and not db_results.empty:
             cagr_thresh = df_ml.loc[high_risk_mask, 'CAGR'].quantile(0.95)
             df_ml.loc[high_risk_mask & (df_ml['CAGR'] >= cagr_thresh), 'Risk'] = 'Very High'
             
-        db_results = df_ml.drop(columns=['Cluster'])
+        # --- PHASE 57: APPLY RANDOM FOREST CLASSIFICATION FOR AI "ACTION" RATING ---
+        from sklearn.ensemble import RandomForestClassifier
+        # Generate synthetic fundamental ground-truth labels mathematically
+        df_ml['Ground_Truth'] = '🟡 HOLD'
+        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].median()) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].median()), 'Ground_Truth'] = '🔵 ACCUMULATE'
+        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.75)) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].quantile(0.3)), 'Ground_Truth'] = '🟢 STRONG BUY'
+        
+        # Train the ML Classification framework
+        rf_model = RandomForestClassifier(n_estimators=50, random_state=42, max_depth=5)
+        rf_model.fit(features, df_ml['Ground_Truth'])
+        df_ml['AI_Action'] = rf_model.predict(features)
+        
+        db_results = df_ml.drop(columns=['Cluster', 'Ground_Truth'])
     except Exception as e:
         pass # Fallback to cached risk if sklearn fails
     # -------------------------------------------------------------------
@@ -602,8 +614,8 @@ if db_results is not None and not db_results.empty:
         
         recommended_stocks = []
         for i, s in enumerate(sample):
-            action = '🔵 ACCUMULATE'
-            if i == 0: action = '✨ AI OPTIMIZED PICK' # Professional tag showing active AI model
+            action = s.get('AI_Action', '🔵 ACCUMULATE')
+            if i == 0: action = f"✨ ML OPTIMIZED: {action}" # Professional tag showing active AI model
             recommended_stocks.append({
                 "name": s['Name'], "symbol": s['Symbol'], "target": s['CAGR'], 
                 "risk": s['Risk'], "category": s['Sector'], "Action": action

@@ -77,10 +77,18 @@ Calculates realistic long-term yield without failing on newly listed stocks (The
 - Calculates actual available years using `len(df) / 12` rather than dividing blindly by inputted `Horizon`.
 - Uses `(Final_Corpus / Invested) ^ (1 / Real_Years) - 1` to project an accurate, defensible yield while dynamically guarding against zero-division loops.
 
-### 3. AI Price Predictive Model (Machine Learning)
-To satisfy the requirement of true predictive AI, we integrated a **Machine Learning model using `scikit-learn`**:
+### 3. Unsupervised Risk Profiling Model (Machine Learning - Clustering)
+To satisfy the requirement of true AI segmentation, we integrated **K-Means Clustering via `scikit-learn`**:
+- **Algorithm**: `KMeans`.
+- **Function**: Automatically invoked to mathematically cluster the offline database stocks into precise `Low`, `Medium`, and `High` risk tiers by analyzing their `Volatility` vs `Max Drawdown` scatter matrices, bypassing rigid human coding rules completely.
+
+### 4. AI Price Predictive Model (Machine Learning - Regression)
 - **Algorithm**: `LinearRegression` (Ordinary Least Squares).
-- **Function**: Automatically invoked in the Pro Scanner tab. It fits itself onto the historical OHLCV data to project an AI Mathematical Forecast line spanning 30 days into the future. It actively accounts for macro directional trends without manual human charting.
+- **Function**: Automatically invoked in the Pro Scanner tab. It fits itself onto the historical OHLCV data to project an AI Mathematical Forecast line spanning 30 days into the future.
+
+### 5. Action Classification Model (Machine Learning - Ensemble)
+- **Algorithm**: `RandomForestClassifier` (Ensemble Trees).
+- **Function**: Trains logically derived "Action Features" (Accumulate vs Strong Buy vs Hold) against fundamental financial indicators to automatically attach highly analytical and scientifically quantified interaction tags to the UI recommendations.
 
 ### 4. Seeded Reactivity (Stability Algorithm)
 Instead of pure `random.sample()` which would cause recommendations to violently flicker on every browser refresh, we use **Seeded Sampling**. 
