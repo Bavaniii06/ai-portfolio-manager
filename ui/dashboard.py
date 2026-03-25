@@ -617,11 +617,9 @@ if db_results is not None and not db_results.empty:
     stock_only_df = stock_only_df.sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
-        # Phase 48: Pro Assistant Variety (Weighted Sampling)
-        # We now consider ALL fundamentally cleared stocks and output a robust list
-        top_candidates = stock_only_df.to_dict('records')
-        rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
-        sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 10))
+        # Phase 61: Pure AI Determinism - The user requested absolute top mathematical stocks, stripping Random Variety
+        # We deliver the explicit Top 10 by CAGR directly from the Machine Learning filter engine.
+        sample = stock_only_df.head(10).to_dict('records')
         
         recommended_stocks = []
         for i, s in enumerate(sample):
@@ -639,9 +637,8 @@ else:
     filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks and "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol',''))]
     if not filtered_stocks: filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if "ETF" not in str(s.get('name',''))]
     
-    # Variety Sampling for Daily Assistant Feel
-    rng_mkt = random.Random(int(age) + st.session_state.get('sip_shuffle_seed', 0))
-    sample = rng_mkt.sample(filtered_stocks, min(len(filtered_stocks), 8)) if filtered_stocks else []
+    # Variety Sampling replaced with absolute High Target sorting
+    sample = sorted(filtered_stocks, key=lambda x: float(str(x['target']).replace('%','')), reverse=True)[:8] if filtered_stocks else []
     
     recommended_stocks = []
     for i, s in enumerate(sample):
