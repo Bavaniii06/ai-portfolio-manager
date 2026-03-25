@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-backend/screener_db.csv
+# backend/screener_db.csv (Synced to GitHub for deployment)
 .DS_Store
 .env
 .gemini/

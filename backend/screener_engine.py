@@ -98,9 +98,14 @@ def run_screener():
                  print(" ❌ Fixed/Empty Data")
                  continue
                  
-            # Handle Multi-Index columns if yfinance is being aggressive
+            # Modern yfinance Multi-Index Handling (Oct 2024 Update)
             if isinstance(df.columns, pd.MultiIndex):
-                df.columns = [c[0] for c in df.columns]
+                if symbol in df.columns.get_level_values(0):
+                    df = df.xs(symbol, level=0, axis=1)
+                elif symbol in df.columns.get_level_values(1):
+                    df = df.xs(symbol, level=1, axis=1)
+                else:
+                    df.columns = [c[0] for c in df.columns]
             
             metrics = calculate_metrics(df)
             if metrics:

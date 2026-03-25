@@ -198,10 +198,17 @@ def fetch_historical_data(symbol, period, interval='1d'):
          df = yf.download(symbol, period=period, interval=interval, progress=False)
          if not df.empty:
              df.index = df.index.tz_localize(None)
+             # Modern yfinance Multi-Index Handling (Oct 2024 Update)
              if isinstance(df.columns, pd.MultiIndex):
-                 new_cols = []
-                 for c in df.columns: new_cols.append(c[0]) 
-                 df.columns = new_cols
+                 # Try to extract the requested symbol specifically if grouped by ticker
+                 if symbol in df.columns.get_level_values(0):
+                     df = df.xs(symbol, level=0, axis=1)
+                 elif symbol in df.columns.get_level_values(1):
+                     df = df.xs(symbol, level=1, axis=1)
+                 else:
+                     # Fallback: Just take first index level (Attributes)
+                     df.columns = [c[0] for c in df.columns]
+             
              df = df.dropna(subset=['Close'])
              return df
          return pd.DataFrame()
