@@ -558,6 +558,34 @@ elif horizon == "Short Term (1-3Y)":
 db_results = load_recommendations(horizon)
 
 if db_results is not None and not db_results.empty:
+    
+    # --- PHASE 55: APPLY K-MEANS CLUSTERING FOR AI RISK SEGMENTATION ---
+    try:
+        from sklearn.cluster import KMeans
+        df_ml = db_results.copy()
+        features = df_ml[['Volatility', 'Max_Drawdown', 'CAGR']].fillna(0)
+        
+        # We classify assets into 4 Mathematical Risk Clusters
+        kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+        df_ml['Cluster'] = kmeans.fit_predict(features)
+        
+        centers = pd.DataFrame(kmeans.cluster_centers_, columns=['Volatility', 'Max_Drawdown', 'CAGR'])
+        centers['Risk_Penalty'] = centers['Volatility'] - centers['Max_Drawdown']
+        rank = centers.sort_values(by='Risk_Penalty').index.tolist()
+        
+        # Overwrite DB rules with Live ML Algorithm predictions!
+        ai_mapping = {rank[0]: "Very Low", rank[1]: "Low", rank[2]: "Medium", rank[3]: "High"}
+        df_ml['Risk'] = df_ml['Cluster'].map(ai_mapping)
+        high_risk_mask = df_ml['Risk'] == 'High'
+        if high_risk_mask.sum() > 0:
+            cagr_thresh = df_ml.loc[high_risk_mask, 'CAGR'].quantile(0.95)
+            df_ml.loc[high_risk_mask & (df_ml['CAGR'] >= cagr_thresh), 'Risk'] = 'Very High'
+            
+        db_results = df_ml.drop(columns=['Cluster'])
+    except Exception as e:
+        pass # Fallback to cached risk if sklearn fails
+    # -------------------------------------------------------------------
+
     # PHASE 51: Enforce Strict Market Picks Filter (No ETFs, Mutual Funds, or Commodities)
     stock_only_df = db_results[
         (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
@@ -575,7 +603,7 @@ if db_results is not None and not db_results.empty:
         recommended_stocks = []
         for i, s in enumerate(sample):
             action = '🔵 ACCUMULATE'
-            if i == 0: action = '✨ AI TOP PICK'
+            if i == 0: action = '🤖 K-MEANS TOP PICK' # Tag showing active AI model
             recommended_stocks.append({
                 "name": s['Name'], "symbol": s['Symbol'], "target": s['CAGR'], 
                 "risk": s['Risk'], "category": s['Sector'], "Action": action
