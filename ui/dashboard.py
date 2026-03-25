@@ -309,7 +309,9 @@ NSE_RECOMMENDATIONS = {
         {"name": "Axis Liquid", "symbol": "LIQUIDETF.NS", "target": 6.7, "risk": "Very Low", "category": "Debt"},
         {"name": "Tata Liquid", "symbol": "LIQUID.NS", "target": 6.8, "risk": "Very Low", "category": "Debt"},
         {"name": "Canara Robeco Liquid", "symbol": "LIQUID.NS", "target": 6.9, "risk": "Very Low", "category": "Debt"},
-        {"name": "HSBC Liquid", "symbol": "LIQUID.NS", "target": 6.5, "risk": "Very Low", "category": "Debt"}
+        {"name": "HSBC Liquid", "symbol": "LIQUID.NS", "target": 6.5, "risk": "Very Low", "category": "Debt"},
+        {"name": "Aditya Birla Liquid", "symbol": "ABSLNN50ET.NS", "target": 6.6, "risk": "Very Low", "category": "Debt"},
+        {"name": "Invesco Liquid", "symbol": "LIQUIDBEES.NS", "target": 6.7, "risk": "Very Low", "category": "Debt"}
     ],
     "Short Term (1-3Y)": [
         {"name": "Nifty 50 ETF", "symbol": "NIFTYBEES.NS", "target": 12.0, "risk": "Medium", "category": "Equity Index"},
@@ -351,7 +353,17 @@ NSE_RECOMMENDATIONS = {
         {"name": "Hero Moto", "symbol": "HEROMOTOCO.NS", "target": 12.8, "risk": "Low", "category": "Auto"},
         {"name": "Eicher Motors", "symbol": "EICHERMOT.NS", "target": 15.5, "risk": "Medium", "category": "Auto"},
         {"name": "JSW Steel", "symbol": "JSWSTEEL.NS", "target": 13.0, "risk": "Medium", "category": "Metals"},
-        {"name": "Tata Steel", "symbol": "TATASTEEL.NS", "target": 12.5, "risk": "Medium", "category": "Metals"}
+        {"name": "Tata Steel", "symbol": "TATASTEEL.NS", "target": 12.5, "risk": "Medium", "category": "Metals"},
+        {"name": "M&M", "symbol": "M&M.NS", "target": 12.8, "risk": "Low", "category": "Auto"},
+        {"name": "Maruti Suzuki", "symbol": "MARUTI.NS", "target": 11.5, "risk": "Low", "category": "Auto"},
+        {"name": "Adani Ports", "symbol": "ADANIPORTS.NS", "target": 13.2, "risk": "Medium", "category": "Logistics"},
+        {"name": "Tech Mahindra", "symbol": "TECHM.NS", "target": 10.8, "risk": "Low", "category": "IT"},
+        {"name": "HDFC Life", "symbol": "HDFCLIFE.NS", "target": 11.2, "risk": "Low", "category": "Insurance"},
+        {"name": "SBI Life", "symbol": "SBILIFE.NS", "target": 11.5, "risk": "Low", "category": "Insurance"},
+        {"name": "ICICI GI", "symbol": "ICICIGI.NS", "target": 12.0, "risk": "Low", "category": "Insurance"},
+        {"name": "Bajaj Hold.", "symbol": "BAJAJHLDNG.NS", "target": 14.0, "risk": "Medium", "category": "Financials"},
+        {"name": "Shree Cement", "symbol": "SHREECEM.NS", "target": 10.5, "risk": "Low", "category": "Materials"},
+        {"name": "Pidilite", "symbol": "PIDILITIND.NS", "target": 12.5, "risk": "Low", "category": "Chemicals"}
     ],
     "Medium (3-5Y)": [
         {"name": "Reliance", "symbol": "RELIANCE.NS", "target": 15.0, "risk": "Medium", "category": "Energy"},
@@ -393,7 +405,17 @@ NSE_RECOMMENDATIONS = {
         {"name": "Coforge", "symbol": "COFORGE.NS", "target": 28.0, "risk": "High", "category": "IT"},
         {"name": "TATA Elxsi", "symbol": "TATAELXSI.NS", "target": 22.0, "risk": "Medium", "category": "IT"},
         {"name": "LTIMindtree", "symbol": "LTIM.NS", "target": 18.0, "risk": "Medium", "category": "IT"},
-        {"name": "Oracle Fin.", "symbol": "OFSS.NS", "target": 19.5, "risk": "Medium", "category": "IT"}
+        {"name": "Oracle Fin.", "symbol": "OFSS.NS", "target": 19.5, "risk": "Medium", "category": "IT"},
+        {"name": "Max Healthcare", "symbol": "MAXHEALTH.NS", "target": 21.0, "risk": "Medium", "category": "Healthcare"},
+        {"name": "Fortis HC", "symbol": "FORTIS.NS", "target": 18.5, "risk": "Medium", "category": "Healthcare"},
+        {"name": "Lupin Ltd", "symbol": "LUPIN.NS", "target": 16.0, "risk": "Medium", "category": "Pharma"},
+        {"name": "Aurobindo", "symbol": "AUROPHARMA.NS", "target": 17.5, "risk": "Medium", "category": "Pharma"},
+        {"name": "Biocon", "symbol": "BIOCON.NS", "target": 14.8, "risk": "Medium", "category": "Pharma"},
+        {"name": "Zydus Life", "symbol": "ZYDUSLIFE.NS", "target": 19.0, "risk": "Medium", "category": "Pharma"},
+        {"name": "Alkem Lab", "symbol": "ALKEM.NS", "target": 18.2, "risk": "Medium", "category": "Pharma"},
+        {"name": "Glenmark", "symbol": "GLENMARK.NS", "target": 22.0, "risk": "High", "category": "Pharma"},
+        {"name": "Granules India", "symbol": "GRANULES.NS", "target": 25.0, "risk": "High", "category": "Pharma"},
+        {"name": "Piramal Ent.", "symbol": "PEL.NS", "target": 14.0, "risk": "Medium", "category": "Financials"}
     ],
     "Long Term (5+Y)": [
         {"name": "Smallcap 250 ETF", "symbol": "SML250BEES.NS", "target": 22.0, "risk": "High", "category": "Equity Index"},
@@ -434,7 +456,18 @@ NSE_RECOMMENDATIONS = {
         {"name": "Blue Star", "symbol": "BLUESTARCO.NS", "target": 22.0, "risk": "Medium", "category": "Consumer Durables"},
         {"name": "Voltas", "symbol": "VOLTAS.NS", "target": 18.0, "risk": "Medium", "category": "Consumer Durables"},
         {"name": "Whirlpool", "symbol": "WHIRLPOOL.NS", "target": 12.5, "risk": "Low", "category": "Consumer Durables"},
-        {"name": "Dixon Tech", "symbol": "DIXON.NS", "target": 45.0, "risk": "Very High", "category": "Electronics"}
+        {"name": "Dixon Tech", "symbol": "DIXON.NS", "target": 45.0, "risk": "Very High", "category": "Electronics"},
+        {"name": "Kaynes Tech", "symbol": "KAYNES.NS", "target": 42.0, "risk": "Very High", "category": "Electronics"},
+        {"name": "Syrma SGS", "symbol": "SYRMA.NS", "target": 35.0, "risk": "High", "category": "Electronics"},
+        {"name": "Avalon Tech", "symbol": "AVALON.NS", "target": 28.0, "risk": "High", "category": "Electronics"},
+        {"name": "Cyient DLM", "symbol": "CYIENTDLM.NS", "target": 32.0, "risk": "High", "category": "Electronics"},
+        {"name": "IdeaForge", "symbol": "IDEAFORGE.NS", "target": 25.0, "risk": "High", "category": "Defense Tech"},
+        {"name": "Zen Tech", "symbol": "ZENTEC.NS", "target": 48.0, "risk": "Very High", "category": "Defense Tech"},
+        {"name": "Paras Defence", "symbol": "PARAS.NS", "target": 35.0, "risk": "High", "category": "Defense"},
+        {"name": "Astra Micro", "symbol": "ASTRAMICRO.NS", "target": 32.0, "risk": "High", "category": "Defense"},
+        {"name": "Apollo Micro", "symbol": "APOLLO.NS", "target": 45.0, "risk": "Very High", "category": "Defense"},
+        {"name": "DCX Systems", "symbol": "DCXINDIA.NS", "target": 28.0, "risk": "High", "category": "Defense"},
+        {"name": "Prem. Explosives", "symbol": "PREMEXPLN.NS", "target": 38.0, "risk": "Very High", "category": "Defense"}
     ]
 }
 
@@ -524,9 +557,10 @@ elif horizon == "Short Term (1-3Y)":
 db_results = load_recommendations(horizon)
 
 if db_results is not None and not db_results.empty:
-    # PHASE 49: Enable Commodities in Market Picks for Better Diversification
+    # PHASE 51: Enforce Strict Market Picks Filter (No ETFs, Mutual Funds, or Commodities)
     stock_only_df = db_results[
-        (~db_results['Name'].str.contains("BeES|Nifty|Sensex", case=False, na=False)) &
+        (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
+        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Gold|Silver|Fund", case=False, na=False)) &
         (db_results['Risk'].isin(allowed_risks))
     ].sort_values(by='CAGR', ascending=False)
     
@@ -682,8 +716,8 @@ with tab1:
 # TAB 2: AI STOCK RECOMMENDATIONS (Restored & Improved)
 # ==============================================================================
 with tab2:
-     st.markdown('<div class="section-header">Top Stock Recommendations</div>', unsafe_allow_html=True)
-     st.markdown(f"AI suggested monthly allocation of **₹{investment_amount:,.0f}** for your **{horizon}** profile.")
+     st.markdown('<div class="section-header">🎯 AI Market Picks (Stocks Only)</div>', unsafe_allow_html=True)
+     st.markdown(f"Our AI identifies high-alpha **Individual Stocks** for your **{horizon}** profile. Recommended allocation: **₹{investment_amount:,.0f}/mo**.")
      
      col_rec1, col_rec2 = st.columns([1, 1])
      
@@ -720,7 +754,7 @@ with tab2:
          st.markdown("##### 🎯 Recommendation Universe Risk-Reward")
          fig_scatter = px.scatter(df_reco, x='risk', y='target', size='Total_Value', color='category',
                                  hover_name='name', size_max=60, height=400,
-                                 color_discrete_sequence=['#10b981', '#0f172a', '#34d399', '#64748b', '#86efac'])
+                                 color_discrete_sequence=['#1e3a8a', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'])
          fig_scatter.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#ffffff", font_color="#475569", xaxis_title="Risk Level", yaxis_title="Target Yield CAGR (%)", xaxis={'categoryorder':'array', 'categoryarray':['Very Low', 'Low', 'Medium', 'High']}, margin=dict(t=20, b=20, l=20, r=20))
          fig_scatter.update_xaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0')
          fig_scatter.update_yaxes(showgrid=True, gridwidth=1, gridcolor='#e2e8f0')
@@ -788,7 +822,10 @@ with tab3:
         st.error(f"Data unavailable for {calc_sym}.")
 
 with tab4:
-    st.markdown('<div class="section-header">Elite Mutual Fund & ETF SIP Planner</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🤖 Elite Mutual Fund & ETF SIP Planner</div>', unsafe_allow_html=True)
+    st.markdown("""
+    **Investment Scope**: Primarily **Mutual Funds & ETFs** for stability, supplemented by **Elite Alpha Stocks** for long-term growth.
+    """)
     
     with st.expander("💡 Understanding SIP: Mutual Funds vs ETFs", expanded=False):
         st.write("""
@@ -924,37 +961,47 @@ with tab4:
                     themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Name']})
 
         # --- UNIVERSAL FALLBACK (Strict Asset & RISK Separation) ---
+        # Get fallback universe appropriate for the current SIM_HORIZON
         fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
-        # Phase 44: Filter fallback by local risk tier
-        fallback_universe = [s for s in fallback_universe if str(s.get('risk', '')) in local_allowed_risks]
-        if not fallback_universe: # Guard against empty filtered list
-            fallback_universe = NSE_RECOMMENDATIONS.get(sim_horizon, NSE_RECOMMENDATIONS["Long Term (5+Y)"])
+        
+        # Phase 51: Ensure Risk filtering applies to the fallback so each profile returns DIFFERENT mutual funds
+        strict_fallback = [s for s in fallback_universe if str(s.get('risk', '')) in local_allowed_risks]
+        if strict_fallback:
+             fallback_universe = strict_fallback
         
         if not themed_grid["Stability (Mutual Funds)"]:
-             # Strictly Funds/ETFs (Exclude Stocks/Commodities)
+             # Strictly Bluechip/Index Funds (Broaden filters for variety)
              stab_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BeES" in str(s.get('symbol',''))) and "GOLD" not in str(s.get('symbol','')) and "SILVER" not in str(s.get('symbol',''))]
-             if not stab_fall: stab_fall = [s for s in fallback_universe if "ETF" in str(s.get('name',''))]
+             # If too restrictive, pick any Largecap/Index related item
+             if len(stab_fall) < 3:
+                 stab_fall = [s for s in fallback_universe if any(x in str(s.get('name','')).upper() for x in ["NIFTY", "SENSEX", "BLUECHIP", "LARGE", "INDEX"])]
+                 if not stab_fall: stab_fall = fallback_universe # absolute fallback
+             
              for s in rng.sample(stab_fall, min(len(stab_fall), 3)): 
                  themed_grid["Stability (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
         
         if not themed_grid["Growth (Mutual Funds)"]:
-             # Strictly Alpha/Midcap Funds
-             grow_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BeES" in str(s.get('symbol',''))) and "Smallcap" in str(s.get('name',''))]
-             if not grow_fall: grow_fall = [s for s in fallback_universe if "ETF" in str(s.get('name',''))]
+             # Strictly Midcap/Smallcap/Alpha Funds
+             grow_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BeES" in str(s.get('symbol',''))) and any(x in str(s.get('name','')).upper() for x in ["MIDCAP", "SMALLCAP", "NEXT 50", "ALPHA", "MOMENTUM"])]
+             if len(grow_fall) < 3: 
+                 grow_fall = [s for s in fallback_universe if ("ETF" in str(s.get('name','')) or "BEES" in str(s.get('symbol','')).upper()) and s not in stab_fall]
+                 if not grow_fall: grow_fall = fallback_universe
+             
              for s in rng.sample(grow_fall, min(len(grow_fall), 3)): 
                  themed_grid["Growth (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
              
         if not themed_grid["Elite Alpha"]:
-             # Strictly Stocks (Exclude ETFs/Funds/Commodities)
-             alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol','')) and "GOLD" not in str(s.get('symbol',''))]
+             # Strictly Quality Stocks (High Growth/Alpha potential)
+             alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name','')).upper() and "BEES" not in str(s.get('symbol','')).upper() and "GOLD" not in str(s.get('symbol','')).upper()]
+
              for s in rng.sample(alpha_fall, min(len(alpha_fall), 3)): 
                  themed_grid["Elite Alpha"].append({"name": s['name'], "raw": s['symbol']})
 
         if not themed_grid["Commodities & Defense"]:
              themed_grid["Commodities & Defense"] = [
-                 {"name": "Nippon Gold Fund", "raw": "GOLDBEES.NS"}, 
+                 {"name": "Nippon Gold ETF", "raw": "GOLDBEES.NS"}, 
                  {"name": "SBI Gold Fund", "raw": "SETFGOLD.NS"},
-                 {"name": "Nippon Silver Fund", "raw": "SILVERBEES.NS"}
+                 {"name": "Nippon Silver ETF", "raw": "SILVERBEES.NS"}
              ]
 
         # UI Header with Shuffle (Matched to Screenshot)
@@ -993,30 +1040,31 @@ with tab4:
         discover_mode = st.radio("Asset Discovery Mode", ["AI Suggestions", "Search All / Custom"], horizontal=True, label_visibility="collapsed")
         
         if discover_mode == "AI Suggestions":
-            # Phase 45: Ensure the dropdown respects card selection instantly
-            all_options = sorted(db_results['Name'].unique().tolist()) if db_results is not None else []
-            # Hybrid pool: Search DB Results + Seed Universe
-            seed_names = [s['name'] for s in fallback_universe]
-            combined_pool = sorted(list(set(all_options + seed_names)))
+            # Phase 50: Hardened Ticker Resolution (Direct Symbol Mapping)
+            # Create a hybrid pool of Name (Symbol) for perfect resolution
+            db_pool = []
+            if db_results is not None:
+                db_pool = [f"{r['Name']} ({r['Symbol']})" for _, r in db_results.iterrows()]
             
-            clean_to_raw = {clean_elite_name(opt): opt for opt in combined_pool}
-            clean_options = list(clean_to_raw.keys())
+            seed_pool = [f"{s['name']} ({s['symbol']})" for s in fallback_universe]
+            combined_display = sorted(list(set(db_pool + seed_pool)))
+            
+            # Map display string back to symbol for fetch
+            display_to_symbol = {d: d.split("(")[-1].strip(")") for d in combined_display}
             
             current_raw = st.session_state.get('sip_search_key', 'NIFTYBEES.NS')
-            # Find the best clean match for the current raw symbol
-            current_clean = clean_elite_name(current_raw)
-            # Try to resolve raw if it's a symbol
-            if current_raw not in combined_pool:
-                 for opt in combined_pool:
-                      if resolve_ticker(opt) == current_raw:
-                           current_clean = clean_elite_name(opt)
-                           break
-
-            def_idx = clean_options.index(current_clean) if current_clean in clean_options else 0
+            # Try to find the display string that contains this raw symbol
+            idx_match = [i for i, d in enumerate(combined_display) if display_to_symbol[d] == current_raw]
+            def_idx = idx_match[0] if idx_match else 0
             
-            s_asset_clean = st.selectbox("🎯 Selected Target Asset", options=clean_options, index=def_idx)
-            s_asset = clean_to_raw.get(s_asset_clean, s_asset_clean)
-            s_sym = resolve_ticker(s_asset)
+            s_asset_disp = st.selectbox("🎯 Selected Target Asset", options=combined_display, index=def_idx)
+            
+            s_sym = display_to_symbol.get(s_asset_disp, "NIFTYBEES.NS")
+            if s_sym != current_raw:
+                st.session_state.sip_search_key = s_sym
+                st.rerun()
+
+            s_asset = s_asset_disp.split(" (")[0] # Clean name for display metrics
         else:
             st.markdown("#### 🔍 Full Market Search")
             st.info("💡 Enter any NSE Ticker to unlock 2000+ assets instantly.")
@@ -1033,7 +1081,12 @@ with tab4:
 
     # 2. Results (Hardened)
     if s_sym:
-         monthly_hist = fetch_historical_data(s_sym, period="max", interval='1mo') 
+         # Standardize via daily download and pandas resample to fix '1mo' provider errors for some symbols
+         daily_hist = fetch_historical_data(s_sym, period="max", interval='1d') 
+         if not daily_hist.empty:
+             monthly_hist = daily_hist.resample('ME').last().dropna(subset=['Close'])
+         else:
+             monthly_hist = pd.DataFrame()
          
          if not monthly_hist.empty and len(monthly_hist) > 1:
              max_months = len(monthly_hist)
@@ -1101,9 +1154,9 @@ with tab4:
              fig_area.add_trace(go.Scatter(
                  x=c_closes.index, y=cum_invested, 
                  fill='tozeroy', mode='lines', 
-                 line={"color": "#334155", "width": 1}, 
+                 line={"color": "#1e3a8a", "width": 1}, 
                  name='Principal', 
-                 fillcolor='rgba(51, 65, 85, 0.1)'
+                 fillcolor='rgba(30, 58, 138, 0.1)'
              ))
              fig_area.add_trace(go.Scatter(
                  x=c_closes.index, y=port_val, 
