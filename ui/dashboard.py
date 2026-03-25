@@ -603,7 +603,7 @@ if db_results is not None and not db_results.empty:
         recommended_stocks = []
         for i, s in enumerate(sample):
             action = '🔵 ACCUMULATE'
-            if i == 0: action = '🤖 K-MEANS TOP PICK' # Tag showing active AI model
+            if i == 0: action = '✨ AI OPTIMIZED PICK' # Professional tag showing active AI model
             recommended_stocks.append({
                 "name": s['Name'], "symbol": s['Symbol'], "target": s['CAGR'], 
                 "risk": s['Risk'], "category": s['Sector'], "Action": action
@@ -846,9 +846,14 @@ with tab3:
              last_date = df_hist.index[-1]
              future_dates = [last_date + timedelta(days=int(i)) for i in range(1, 31)]
              
-             fig.add_trace(go.Scatter(x=future_dates, y=future_y, mode='lines', 
-                                      line={"color": "#8b5cf6", "width": 2, "dash": "dash"}, 
-                                      name="AI Forecast (Linear Regression)"), row=1, col=1)
+             # Add a smooth continuous line, starting from the last exact price point for a seamless visual
+             future_X_plot = np.insert(future_X, 0, len(df_ml) - 1).reshape(-1, 1)
+             future_y_plot = np.insert(future_y, 0, df_ml['Close'].iloc[-1])
+             future_dates_plot = [df_hist.index[-1]] + future_dates
+             
+             fig.add_trace(go.Scatter(x=future_dates_plot, y=future_y_plot, mode='lines', 
+                                      line={"color": "#2563eb", "width": 4}, 
+                                      name="AI Predictive Trend"), row=1, col=1)
         # ----------------------------------------------------
         
         if 'Volume' in df_hist.columns:
