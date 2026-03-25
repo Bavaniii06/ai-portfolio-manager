@@ -43,7 +43,12 @@ Instead of just asking a user "Are you Conservative or Growth?", the algorithm m
 - Pure randomization creates chaos (the AI changes its mind on every click). 
 - We built a deterministic hashing model where `Seed = Age + Monthly Budget`. This guarantees the specific subset of recommended stocks stays identical for a specific user profile across sessions, producing a highly confident "Professional Advisory" feel.
 
-### C. The Resampling Return Model (The "Insufficient Data" Fix)
+### C. The Predictive AI Model (Machine Learning via Scikit-Learn)
+- Your project incorporates a true Machine Learning model (`LinearRegression` from `sklearn`) inside the **Stock Scanner** tab.
+- When you type in a stock symbol, the AI dynamically extracts the historical OHLCV closing prices, trains the scikit-learn model, and generates a **30-day continuous statistical forecast**.
+- **Why this model?** Linear Regression was chosen precisely for its ability to filter out pure short-term noise and clearly map the macro structural trend of an asset over the selected timeframe, giving investors a clear directional target.
+
+### D. The Resampling Return Model (The "Insufficient Data" Fix)
 - To prevent mathematical crashes on new companies (like those listed 2 years ago) when calculating a 5-year CAGR, the system does not fail. 
 - It downloads pure granular `1d` (Daily) candlestick data, and uses Python Pandas to resample it dynamically (`resample('ME')`) into month-end markers. It calculates the True Compounded Return over whatever fraction of years actually exists, rather than hard-crashing.
 

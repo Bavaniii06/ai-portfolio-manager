@@ -77,7 +77,12 @@ Calculates realistic long-term yield without failing on newly listed stocks (The
 - Calculates actual available years using `len(df) / 12` rather than dividing blindly by inputted `Horizon`.
 - Uses `(Final_Corpus / Invested) ^ (1 / Real_Years) - 1` to project an accurate, defensible yield while dynamically guarding against zero-division loops.
 
-### 3. Seeded Reactivity (Stability Algorithm)
+### 3. AI Price Predictive Model (Machine Learning)
+To satisfy the requirement of true predictive AI, we integrated a **Machine Learning model using `scikit-learn`**:
+- **Algorithm**: `LinearRegression` (Ordinary Least Squares).
+- **Function**: Automatically invoked in the Pro Scanner tab. It fits itself onto the historical OHLCV data to project an AI Mathematical Forecast line spanning 30 days into the future. It actively accounts for macro directional trends without manual human charting.
+
+### 4. Seeded Reactivity (Stability Algorithm)
 Instead of pure `random.sample()` which would cause recommendations to violently flicker on every browser refresh, we use **Seeded Sampling**. 
 - **Hash Function**: `seed = int(Age) + int(InvestmentAmount) + session_state.shuffle_key`
 - This ensures the UI feels "stable and highly confident" like a real advisor, only showing new selections when the user explicitly changes their profile settings or presses the `Shuffle Portfolio` button.

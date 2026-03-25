@@ -8,6 +8,7 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import os
 import random
+from sklearn.linear_model import LinearRegression
 
 # ------------------------------------------------------------------------------
 # PAGE CONFIGURATION
@@ -801,6 +802,26 @@ with tab3:
              fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['Close'], mode='lines', line={"color": "#0f172a", "width": 2}, name="Price"), row=1, col=1)
              
         fig.add_trace(go.Scatter(x=df_hist.index, y=df_hist['SMA_20'], mode='lines', line={"color": "#f59e0b", "width": 1.5, "dash": "dot"}, name="20 SMA"), row=1, col=1)
+        
+        # --- PHASE 54: TRUE AI ML MODEL (Scikit-Learn) ---
+        df_ml = df_hist.dropna(subset=['Close']).copy()
+        if len(df_ml) > 30:
+             df_ml['Day'] = np.arange(len(df_ml))
+             X = df_ml[['Day']]
+             y = df_ml['Close']
+             ai_model = LinearRegression()
+             ai_model.fit(X, y)
+             
+             # Forecast the next 30 active days
+             future_X = np.arange(len(df_ml), len(df_ml) + 30).reshape(-1, 1)
+             future_y = ai_model.predict(future_X)
+             last_date = df_hist.index[-1]
+             future_dates = [last_date + timedelta(days=int(i)) for i in range(1, 31)]
+             
+             fig.add_trace(go.Scatter(x=future_dates, y=future_y, mode='lines', 
+                                      line={"color": "#8b5cf6", "width": 2, "dash": "dash"}, 
+                                      name="AI Forecast (Linear Regression)"), row=1, col=1)
+        # ----------------------------------------------------
         
         if 'Volume' in df_hist.columns:
             colors = ['#10b981' if row['Close'] >= row['Open'] else '#ef4444' for i, row in df_hist.iterrows()]
