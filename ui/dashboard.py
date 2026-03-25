@@ -559,74 +559,33 @@ db_results = load_recommendations(horizon)
 
 if db_results is not None and not db_results.empty:
     
-    # --- PHASE 55: APPLY K-MEANS CLUSTERING FOR AI RISK SEGMENTATION ---
-    try:
-        from sklearn.cluster import KMeans
-        df_ml = db_results.copy()
-        features = df_ml[['Volatility', 'Max_Drawdown', 'CAGR']].fillna(0)
-        
-        # We classify assets into 4 Mathematical Risk Clusters
-        kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
-        df_ml['Cluster'] = kmeans.fit_predict(features)
-        
-        centers = pd.DataFrame(kmeans.cluster_centers_, columns=['Volatility', 'Max_Drawdown', 'CAGR'])
-        centers['Risk_Penalty'] = centers['Volatility'] - centers['Max_Drawdown']
-        rank = centers.sort_values(by='Risk_Penalty').index.tolist()
-        
-        # Overwrite DB rules with Live ML Algorithm predictions!
-        ai_mapping = {rank[0]: "Very Low", rank[1]: "Low", rank[2]: "Medium", rank[3]: "High"}
-        df_ml['Risk'] = df_ml['Cluster'].map(ai_mapping)
-        high_risk_mask = df_ml['Risk'] == 'High'
-        if high_risk_mask.sum() > 0:
-            cagr_thresh = df_ml.loc[high_risk_mask, 'CAGR'].quantile(0.95)
-            df_ml.loc[high_risk_mask & (df_ml['CAGR'] >= cagr_thresh), 'Risk'] = 'Very High'
-            
-        # --- PHASE 57: APPLY RANDOM FOREST CLASSIFICATION FOR AI "ACTION" RATING ---
-        from sklearn.ensemble import RandomForestClassifier
-        # Generate synthetic fundamental ground-truth labels mathematically
-        df_ml['Ground_Truth'] = '🟡 HOLD'
-        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.40)), 'Ground_Truth'] = '🔵 ACCUMULATE'
-        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.70)) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].quantile(0.40)), 'Ground_Truth'] = '🟢 STRONG BUY'
-        
-        # Train the ML Classification framework
-        rf_model = RandomForestClassifier(n_estimators=50, random_state=42, max_depth=5)
-        rf_model.fit(features, df_ml['Ground_Truth'])
-        df_ml['AI_Action'] = rf_model.predict(features)
-        
-        db_results = df_ml.drop(columns=['Cluster', 'Ground_Truth'])
-    except Exception as e:
-        pass # Fallback to cached risk if sklearn fails
-    # -------------------------------------------------------------------
-
-    # PHASE 62: The user correctly identified that ETFs/Gold are fundamentally "stable" and SHOULD be suggested in Market Picks internally for Conservative profiles.
-    # We remove the rigid "No ETF/Gold" string-matching ban and let the K-Means/Random Forest AI purely decide what is safest.
-    ai_stock_universe = db_results.copy()
+    # PHASE 51: Enforce Strict Market Picks Filter (No ETFs/Mutual Funds)
+    # The core database is already mapped with Risk categorizations by the backend.
+    stock_only_df = db_results[
+        (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
+        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Fund", case=False, na=False)) &
+        (db_results['Risk'].isin(allowed_risks))
+    ]
     
-    base_filter = ai_stock_universe[ai_stock_universe['Risk'].isin(allowed_risks)]
-    
-    # PHASE 59: AI Graceful Relaxation. If K-Means clusters all assets rigidly,
-    # grab the mathematically safest/lowest-volatility stocks available in the total universe.
-    if len(base_filter) < 4:
-        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(15)
-
-    # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD", but ONLY if we have enough assets
-    pruned_df = base_filter[base_filter.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD']
-    stock_only_df = pruned_df if len(pruned_df) >= 4 else base_filter
+    # Graceful relaxation for Conservative parameters where pure "Stocks" are fundamentally too risky
+    if stock_only_df.empty or len(stock_only_df) < 4:
+        stock_only_df = db_results[db_results['Risk'].isin(allowed_risks)]
+        
     stock_only_df = stock_only_df.sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
-        # Yesterday's Perfect Variety Sampling (Restored exactly to 4 suggestions)
+        # Phase 48: Pro Assistant Variety (Weighted Sampling)
+        # Select completely dynamic sets based on combination of Age and Timeframe mathematically!
         top_candidates = stock_only_df.head(15).to_dict('records')
         rng_mkt = random.Random(int(age) + int(horizon_to_yrs.get(horizon, 5)))
         sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 4))
         
-        # Sort back by objective CAGR so it displays beautifully
         sample = sorted(sample, key=lambda x: float(x['CAGR']), reverse=True)
         
         recommended_stocks = []
         for i, s in enumerate(sample):
-            action = s.get('AI_Action', '🔵 ACCUMULATE')
-            if i == 0: action = f"✨ ML OPTIMIZED: {action}" # Professional tag showing active AI model
+            action = '🔵 ACCUMULATE'
+            if i == 0: action = '✨ AI OPTIMIZED PICK' 
             recommended_stocks.append({
                 "name": s['Name'], "symbol": s['Symbol'], "target": s['CAGR'], 
                 "risk": s['Risk'], "category": s['Sector'], "Action": action
