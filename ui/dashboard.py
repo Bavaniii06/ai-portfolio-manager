@@ -585,8 +585,8 @@ if db_results is not None and not db_results.empty:
         from sklearn.ensemble import RandomForestClassifier
         # Generate synthetic fundamental ground-truth labels mathematically
         df_ml['Ground_Truth'] = '🟡 HOLD'
-        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].median()) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].median()), 'Ground_Truth'] = '🔵 ACCUMULATE'
-        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.75)) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].quantile(0.3)), 'Ground_Truth'] = '🟢 STRONG BUY'
+        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.40)), 'Ground_Truth'] = '🔵 ACCUMULATE'
+        df_ml.loc[(df_ml['CAGR'] > df_ml['CAGR'].quantile(0.70)) & (df_ml['Max_Drawdown'] > df_ml['Max_Drawdown'].quantile(0.40)), 'Ground_Truth'] = '🟢 STRONG BUY'
         
         # Train the ML Classification framework
         rf_model = RandomForestClassifier(n_estimators=50, random_state=42, max_depth=5)
@@ -599,10 +599,12 @@ if db_results is not None and not db_results.empty:
     # -------------------------------------------------------------------
 
     # PHASE 51: Enforce Strict Market Picks Filter (No ETFs, Mutual Funds, or Commodities)
+    # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD"
     stock_only_df = db_results[
         (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
         (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Gold|Silver|Fund", case=False, na=False)) &
-        (db_results['Risk'].isin(allowed_risks))
+        (db_results['Risk'].isin(allowed_risks)) &
+        (db_results.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD') 
     ].sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
