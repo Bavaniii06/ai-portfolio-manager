@@ -599,13 +599,22 @@ if db_results is not None and not db_results.empty:
     # -------------------------------------------------------------------
 
     # PHASE 51: Enforce Strict Market Picks Filter (No ETFs, Mutual Funds, or Commodities)
-    # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD"
-    stock_only_df = db_results[
+    ai_stock_universe = db_results[
         (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
-        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Gold|Silver|Fund", case=False, na=False)) &
-        (db_results['Risk'].isin(allowed_risks)) &
-        (db_results.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD') 
-    ].sort_values(by='CAGR', ascending=False)
+        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Gold|Silver|Fund", case=False, na=False))
+    ]
+    
+    base_filter = ai_stock_universe[ai_stock_universe['Risk'].isin(allowed_risks)]
+    
+    # PHASE 59: AI Graceful Relaxation. If K-Means clusters all stocks as Medium/High (leaving Conservative users with nothing),
+    # grab the mathematically safest/lowest-volatility stocks available in the total universe.
+    if len(base_filter) < 4:
+        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(10)
+
+    # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD", but ONLY if we have enough assets
+    pruned_df = base_filter[base_filter.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD']
+    stock_only_df = pruned_df if len(pruned_df) >= 4 else base_filter
+    stock_only_df = stock_only_df.sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
         # Phase 48: Pro Assistant Variety (Weighted Sampling)
