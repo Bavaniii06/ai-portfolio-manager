@@ -251,7 +251,7 @@ def resolve_ticker(query):
          "NIFTY 50 ETF": "NIFTYBEES.NS",
          "BANKNIFTY": "BANKBEES.NS",
          "IT": "ITBEES.NS",
-         "TATA": "TATAMOTORS.NS",
+         "TATA": "TCS.NS",
          "RELIANCE": "RELIANCE.NS"
      }
      if q in mapping: return mapping[q]
@@ -614,8 +614,8 @@ else:
 st.markdown("""
 <div class="hero">
     <div>
-        <h1>Portfolio Pro</h1>
-        <p>Market Intelligence • AI Advisory • Multi-Asset Tracking</p>
+        <h1>AI Portfolio Manager</h1>
+        <p>AI Advisory • Asset Tracking</p>
     </div>
     <div class="hero-metric">
         <div style='font-size: 2.2rem; font-weight: 800; line-height: 1; color: #064e3b;'>₹{:,}</div>
@@ -641,7 +641,7 @@ with tab1:
     col_t1, col_t2 = st.columns([1.5, 1])
     
     with col_t1:
-        st.markdown('<div class="section-header">Live Multi-Asset Portfolio Tracker</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Live Portfolio Tracker</div>', unsafe_allow_html=True)
         
         with st.expander("➕ Log New Transaction (Equities, Gold, Silver)", expanded=False):
             with st.form("add_stock_form"):
@@ -689,7 +689,7 @@ with tab1:
                 st.markdown(f'<div class="pro-card"> <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Net Worth</div> <div style="font-size:1.8rem; font-weight:800; color:#10b981;">{format_inr(tot_cur)}</div> </div>', unsafe_allow_html=True)
             with sc3:
                 c = "#10b981" if tot_pl >= 0 else "#ef4444"
-                st.markdown(f'<div class="pro-card" style="border-right:4px solid {c}"> <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Unrealized P&L</div> <div style="font-size:1.8rem; font-weight:800; color:{c};">{format_inr(tot_pl)} ({pl_pct:.2f}%)</div> </div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="pro-card" style="border-right:4px solid {c}"> <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Net P&L</div> <div style="font-size:1.8rem; font-weight:800; color:{c};">{format_inr(tot_pl)} ({pl_pct:.2f}%)</div> </div>', unsafe_allow_html=True)
             
             st.dataframe(
                 df_port.style.format({
@@ -716,8 +716,8 @@ with tab1:
 # TAB 2: AI STOCK RECOMMENDATIONS (Restored & Improved)
 # ==============================================================================
 with tab2:
-     st.markdown('<div class="section-header">🎯 AI Market Picks (Stocks Only)</div>', unsafe_allow_html=True)
-     st.markdown(f"Our AI identifies high-alpha **Individual Stocks** for your **{horizon}** profile. Recommended allocation: **₹{investment_amount:,.0f}/mo**.")
+     st.markdown('<div class="section-header">🎯 AI Market Picks</div>', unsafe_allow_html=True)
+     st.markdown(f"Our AI identifies **Individual Stocks** for your **{horizon}** profile. Recommended allocation: **₹{investment_amount:,.0f}/mo**.")
      
      col_rec1, col_rec2 = st.columns([1, 1])
      
@@ -822,9 +822,9 @@ with tab3:
         st.error(f"Data unavailable for {calc_sym}.")
 
 with tab4:
-    st.markdown('<div class="section-header">🤖 Elite Mutual Fund & ETF SIP Planner</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🤖 Mutual Fund & ETF SIP Planner</div>', unsafe_allow_html=True)
     st.markdown("""
-    **Investment Scope**: Primarily **Mutual Funds & ETFs** for stability, supplemented by **Elite Alpha Stocks** for long-term growth.
+    **Investment Scope**: Primarily **Mutual Funds & ETFs** for stability, supplemented by **Alpha Stocks** for long-term growth.
     """)
     
     with st.expander("💡 Understanding SIP: Mutual Funds vs ETFs", expanded=False):
@@ -882,7 +882,7 @@ with tab4:
         # Phase 33: Reactive Seed for Intelligent Sampling
         reactive_seed = int(age) + int(s_amt_final) + int(s_yrs_final) + st.session_state.sip_shuffle_seed
 
-        # Elite Name Cleaner Utility (Hardened for Perfection)
+        # Name Cleaner Utility (Hardened for Perfection)
         def clean_elite_name(raw_name):
             clean = raw_name.replace(".NS", "").replace(".BO", "")
             # Phase 42: Preserve branding but remove technical noise
@@ -901,7 +901,7 @@ with tab4:
             
             return clean.strip()
 
-        themed_grid = {"Stability (Mutual Funds)": [], "Growth (Mutual Funds)": [], "Elite Alpha": [], "Commodities & Defense": []}
+        themed_grid = {"Stability (Mutual Funds)": [], "Growth (Mutual Funds)": [], "Alpha Stocks": [], "Commodities & Defense": []}
         import random
         rng = random.Random(reactive_seed)
 
@@ -919,7 +919,7 @@ with tab4:
                 candidates = l_cap_pool.head(6).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = l_cap_pool.loc[idx]
-                    themed_grid["Stability (Mutual Funds)"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Stability (Mutual Funds)"].append({"name": r['Name'], "raw": r['Symbol']})
 
             # 2. Growth (Mutual Funds) - Mid/Small Cap Funds ONLY
             g_mf_pool = active_universe[
@@ -934,9 +934,9 @@ with tab4:
                 candidates = g_mf_pool.head(6).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = g_mf_pool.loc[idx]
-                    themed_grid["Growth (Mutual Funds)"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Growth (Mutual Funds)"].append({"name": r['Name'], "raw": r['Symbol']})
 
-            # 3. Elite Alpha (Stocks)
+            # 3. Alpha Stocks (Stocks)
             stock_pool = active_universe[
                 (~active_universe['Sector'].str.contains("ETF|Commodity", case=False, na=False)) &
                 (~active_universe['Name'].str.contains("ETF|BeES|Nifty|Sensex", case=False, na=False)) &
@@ -947,7 +947,7 @@ with tab4:
                 candidates = stock_pool.head(10).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = stock_pool.loc[idx]
-                    themed_grid["Elite Alpha"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Alpha Stocks"].append({"name": r['Name'], "raw": r['Symbol']})
 
             # 4. Commodities & Defense
             comm_pool = active_universe[
@@ -958,7 +958,7 @@ with tab4:
                 candidates = comm_pool.head(5).index.tolist()
                 for idx in rng.sample(candidates, min(len(candidates), 3)):
                     r = comm_pool.loc[idx]
-                    themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Name']})
+                    themed_grid["Commodities & Defense"].append({"name": r['Name'], "raw": r['Symbol']})
 
         # --- UNIVERSAL FALLBACK (Strict Asset & RISK Separation) ---
         # Get fallback universe appropriate for the current SIM_HORIZON
@@ -990,12 +990,12 @@ with tab4:
              for s in rng.sample(grow_fall, min(len(grow_fall), 3)): 
                  themed_grid["Growth (Mutual Funds)"].append({"name": s['name'], "raw": s['symbol']})
              
-        if not themed_grid["Elite Alpha"]:
+        if not themed_grid["Alpha Stocks"]:
              # Strictly Quality Stocks (High Growth/Alpha potential)
              alpha_fall = [s for s in fallback_universe if "ETF" not in str(s.get('name','')).upper() and "BEES" not in str(s.get('symbol','')).upper() and "GOLD" not in str(s.get('symbol','')).upper()]
-
+             
              for s in rng.sample(alpha_fall, min(len(alpha_fall), 3)): 
-                 themed_grid["Elite Alpha"].append({"name": s['name'], "raw": s['symbol']})
+                 themed_grid["Alpha Stocks"].append({"name": s['name'], "raw": s['symbol']})
 
         if not themed_grid["Commodities & Defense"]:
              themed_grid["Commodities & Defense"] = [
@@ -1184,4 +1184,4 @@ with tab4:
 # ------------------------------------------------------------------------------
 # FOOTER
 # ------------------------------------------------------------------------------
-st.markdown("<br><br><center style='color:#94a3b8; font-size:0.8rem;'>© 2026 Portfolio Pro • Multi-Asset Engine</center>", unsafe_allow_html=True)
+st.markdown("<br><br><center style='color:#94a3b8; font-size:0.8rem;'>© 2026 AI Portfolio Manager Engine</center>", unsafe_allow_html=True)
