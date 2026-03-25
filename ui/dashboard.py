@@ -607,7 +607,7 @@ if db_results is not None and not db_results.empty:
     # PHASE 59: AI Graceful Relaxation. If K-Means clusters all assets rigidly,
     # grab the mathematically safest/lowest-volatility stocks available in the total universe.
     if len(base_filter) < 4:
-        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(4)
+        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(15)
 
     # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD", but ONLY if we have enough assets
     pruned_df = base_filter[base_filter.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD']
@@ -622,7 +622,7 @@ if db_results is not None and not db_results.empty:
         sample = rng_mkt.sample(top_candidates, min(len(top_candidates), 8))
         
         # Sort back by objective CAGR so it displays beautifully
-        sample = sorted(sample, key=lambda x: float(x['target']), reverse=True)
+        sample = sorted(sample, key=lambda x: float(x['CAGR']), reverse=True)
         
         recommended_stocks = []
         for i, s in enumerate(sample):
