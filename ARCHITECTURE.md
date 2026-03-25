@@ -86,14 +86,10 @@ To satisfy the requirement of true AI segmentation, we integrated **K-Means Clus
 - **Algorithm**: `LinearRegression` (Ordinary Least Squares).
 - **Function**: Automatically invoked in the Pro Scanner tab. It fits itself onto the historical OHLCV data to project an AI Mathematical Forecast line spanning 30 days into the future.
 
-### 5. Action Classification Model (Machine Learning - Ensemble)
-- **Algorithm**: `RandomForestClassifier` (Ensemble Trees).
-- **Function**: Trains logically derived "Action Features" (Accumulate vs Strong Buy vs Hold) against fundamental financial indicators to automatically attach highly analytical and scientifically quantified interaction tags to the UI recommendations.
-
 ### 4. Seeded Reactivity (Stability Algorithm)
 Instead of pure `random.sample()` which would cause recommendations to violently flicker on every browser refresh, we use **Seeded Sampling**. 
-- **Hash Function**: `seed = int(Age) + int(InvestmentAmount) + session_state.shuffle_key`
-- This ensures the UI feels "stable and highly confident" like a real advisor, only showing new selections when the user explicitly changes their profile settings or presses the `Shuffle Portfolio` button.
+- **Hash Function**: `seed = int(Age) + horizon_to_years`
+- This ensures the UI feels "stable and highly confident" like a real advisor, only showing new selections when the user explicitly changes their profile settings.
 
 ---
 

@@ -711,9 +711,7 @@ with tab1:
                   .map(lambda v: f"background-color: {'#dcfce7' if 'BUY' in v else '#fef9c3' if 'HOLD' in v else '#fee2e2'}; border-radius: 4px; padding: 2px;", subset=['AI Signal']),
                 use_container_width=True, hide_index=True
             )
-            if st.button("🗑️ Reset Testing Portfolio"):
-                st.session_state.invested_portfolio = pd.DataFrame(columns=['Symbol', 'Quantity', 'Avg_Price'])
-                st.rerun()
+            # Portfolio Reset Button cleanly removed as requested by user
             
     with col_t2:
         st.markdown('<div class="section-header">Asset Distribution</div>', unsafe_allow_html=True)
