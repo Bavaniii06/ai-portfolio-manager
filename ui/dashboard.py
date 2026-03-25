@@ -598,18 +598,16 @@ if db_results is not None and not db_results.empty:
         pass # Fallback to cached risk if sklearn fails
     # -------------------------------------------------------------------
 
-    # PHASE 51: Enforce Strict Market Picks Filter (No ETFs, Mutual Funds, or Commodities)
-    ai_stock_universe = db_results[
-        (~db_results['Sector'].str.contains("ETF|Commodity|Fund", case=False, na=False)) &
-        (~db_results['Name'].str.contains("ETF|BeES|Nifty|Sensex|Gold|Silver|Fund", case=False, na=False))
-    ]
+    # PHASE 62: The user correctly identified that ETFs/Gold are fundamentally "stable" and SHOULD be suggested in Market Picks internally for Conservative profiles.
+    # We remove the rigid "No ETF/Gold" string-matching ban and let the K-Means/Random Forest AI purely decide what is safest.
+    ai_stock_universe = db_results.copy()
     
     base_filter = ai_stock_universe[ai_stock_universe['Risk'].isin(allowed_risks)]
     
-    # PHASE 59: AI Graceful Relaxation. If K-Means clusters all stocks as Medium/High (leaving Conservative users with nothing),
+    # PHASE 59: AI Graceful Relaxation. If K-Means clusters all assets rigidly,
     # grab the mathematically safest/lowest-volatility stocks available in the total universe.
     if len(base_filter) < 4:
-        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(10)
+        base_filter = ai_stock_universe.sort_values(by=['Volatility'], ascending=True).head(4)
 
     # PHASE 58: Actively prune any stock the Random Forest model labeled as "HOLD", but ONLY if we have enough assets
     pruned_df = base_filter[base_filter.get('AI_Action', '🟢 STRONG BUY') != '🟡 HOLD']
@@ -617,9 +615,9 @@ if db_results is not None and not db_results.empty:
     stock_only_df = stock_only_df.sort_values(by='CAGR', ascending=False)
     
     if not stock_only_df.empty:
-        # Phase 61: Pure AI Determinism - The user requested absolute top mathematical stocks, stripping Random Variety
-        # We deliver the explicit Top 10 by CAGR directly from the Machine Learning filter engine.
-        sample = stock_only_df.head(10).to_dict('records')
+        # Phase 61: Pure AI Determinism
+        # The user requested exactly Top 4 mathematically confirmed top-tier assets
+        sample = stock_only_df.head(4).to_dict('records')
         
         recommended_stocks = []
         for i, s in enumerate(sample):
@@ -631,14 +629,14 @@ if db_results is not None and not db_results.empty:
             })
     else:
         # Emergency Fallback to hardcoded stock assets
-        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks and "ETF" not in str(s.get('name',''))][:8]
+        recommended_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s['risk'] in allowed_risks][:4]
 else:
     # Use Expanded Hardcoded Universe (Phase 48)
     filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if s["risk"] in allowed_risks and "ETF" not in str(s.get('name','')) and "BeES" not in str(s.get('symbol',''))]
     if not filtered_stocks: filtered_stocks = [s for s in NSE_RECOMMENDATIONS[horizon] if "ETF" not in str(s.get('name',''))]
     
-    # Variety Sampling replaced with absolute High Target sorting
-    sample = sorted(filtered_stocks, key=lambda x: float(str(x['target']).replace('%','')), reverse=True)[:8] if filtered_stocks else []
+    # Variety Sampling replaced with absolute High Target sorting for exact 4
+    sample = sorted(filtered_stocks, key=lambda x: float(str(x['target']).replace('%','')), reverse=True)[:4] if filtered_stocks else []
     
     recommended_stocks = []
     for i, s in enumerate(sample):
